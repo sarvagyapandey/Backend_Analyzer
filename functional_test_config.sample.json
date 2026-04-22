@@ -1,0 +1,42 @@
+{
+  "base_url": "http://localhost:8000",
+  "defaults": {
+    "timeout_seconds": 10,
+    "headers": {
+      "Accept": "application/json"
+    }
+  },
+  "tests": [
+    {
+      "name": "REST health endpoint returns ok payload",
+      "kind": "rest",
+      "method": "GET",
+      "path": "/health",
+      "expect": {
+        "status": 200,
+        "json_paths": {
+          "status": "not_null",
+          "error": "null"
+        },
+        "max_response_time_ms": 1500
+      }
+    },
+    {
+      "name": "GraphQL user query returns data and no errors",
+      "kind": "graphql",
+      "path": "/graphql",
+      "query": "query GetUser($id: ID!) { user(id: $id) { id name } }",
+      "variables": {
+        "id": "1"
+      },
+      "expect": {
+        "status": 200,
+        "data_not_null": true,
+        "no_errors": true,
+        "json_paths": {
+          "data.user": "not_null"
+        }
+      }
+    }
+  ]
+}

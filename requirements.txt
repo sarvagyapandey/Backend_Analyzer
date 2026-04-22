@@ -1,0 +1,31 @@
+# Backend Analyzer - Requirements
+# 
+# Core Tool: ZERO external dependencies required
+# All analysis uses Python standard library libraries only
+# 
+# Python Version Requirement:
+# - Python 3.8 or higher (for dataclasses and type hints)
+# - tkinter usually pre-installed with Python on Windows/macOS/Linux
+#
+# Optional Dependencies:
+# Install these if you want enhanced analysis integration
+#
+# For security analysis (can be skipped - tool works without it):
+bandit==1.7.5
+#
+# For code quality checks (can be skipped - tool works without it):
+flake8==6.0.0
+#
+# Installation:
+# ============
+# 1. Basic usage (no optional tools):
+#    $ python cli.py /path/to/backend
+#
+# 2. With optional security + quality analysis:
+#    $ pip install -r requirements.txt
+#    $ python cli.py /path/to/backend
+#
+# Note: If bandit or flake8 are not installed, the tool will:
+#   - Skip those integrations gracefully
+#   - Still run all 17 custom detectors
+#   - Still provide full analysis reports
