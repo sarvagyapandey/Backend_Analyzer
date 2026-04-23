@@ -215,9 +215,10 @@ class BackendDiscoveryEngine:
 
         discovery.frameworks = sorted(frameworks)
         discovery.database_type = self._classify_database_type(db_markers)
-        discovery.api_style = self._classify_api_style(api_styles)
         endpoints = self._enrich_graphql_endpoints_with_schema(endpoints, schema_index, graphql_http_path)
         discovery.endpoints = self._dedupe_endpoints(endpoints)
+        api_styles.update(self._api_styles_from_endpoints(discovery.endpoints))
+        discovery.api_style = self._classify_api_style(api_styles)
         return discovery
 
     def _iter_source_files(self, path: str):
@@ -433,7 +434,7 @@ class BackendDiscoveryEngine:
         variable_signature = self._graphql_variable_signature_from_schema_args(args)
         field_arguments = self._graphql_field_arguments_from_schema_args(args)
         selection = self._graphql_selection_from_schema_type(schema_operation.get("return_type", ""), object_fields)
-        field_line = f"{name}{field_arguments}{selection}"
+        field_line = f"{self._graphql_field_name(name)}{field_arguments}{selection}"
         operation_label = f"{name}Operation" if operation_kind == "mutation" else f"{name}Query"
         return f"{operation_kind} {operation_label}{variable_signature} {{\n  {field_line}\n}}"
 
@@ -887,8 +888,17 @@ class BackendDiscoveryEngine:
     def _classify_api_style(self, styles: Set[str]) -> str:
         if not styles:
             return "Unknown"
-        ordered = [style for style in ("REST", "GraphQL") if style in styles]
+        ordered = [style for style in ("GraphQL", "REST") if style in styles]
         return " + ".join(ordered)
+
+    def _api_styles_from_endpoints(self, endpoints: List[DiscoveredEndpoint]) -> Set[str]:
+        styles: Set[str] = set()
+        for endpoint in endpoints:
+            if endpoint.kind == "graphql":
+                styles.add("GraphQL")
+            elif endpoint.kind == "rest":
+                styles.add("REST")
+        return styles
 
     def _dedupe_endpoints(self, endpoints: List[DiscoveredEndpoint]) -> List[DiscoveredEndpoint]:
         seen: Set[Tuple[str, str, str, str]] = set()
@@ -906,6 +916,14 @@ class BackendDiscoveryEngine:
         combined = "/".join(part.strip("/") for part in (prefix, path) if part)
         return f"/{combined}" if combined else "/"
 
+    def _graphql_field_name(self, name: str) -> str:
+        if "_" not in name:
+            return name
+        parts = [part for part in name.split("_") if part]
+        if not parts:
+            return name
+        return parts[0] + "".join(part[:1].upper() + part[1:] for part in parts[1:])
+
     def _build_graphql_query(
         self,
         name: str,
@@ -919,7 +937,7 @@ class BackendDiscoveryEngine:
         variable_signature = self._build_java_graphql_variable_signature(graphql_parameters)
         field_arguments = self._build_java_graphql_arguments(graphql_parameters)
         field_selection = self._build_java_graphql_selection(return_type, java_type_fields or {})
-        field_line = f"{name}{field_arguments}{field_selection}"
+        field_line = f"{self._graphql_field_name(name)}{field_arguments}{field_selection}"
         if operation == "mutation":
             return f"mutation {name}Operation{variable_signature} {{\n  {field_line}\n}}"
         return f"query {name}Query{variable_signature} {{\n  {field_line}\n}}"
@@ -1122,6 +1140,12 @@ class BackendDiscoveryEngine:
 
     def _java_type_to_graphql_type(self, type_name: str) -> str:
         normalized = self._normalize_java_type_name(type_name)
+        if not normalized:
+            return "String"
+        if normalized in {"Optional", "Mono", "Uni", "CompletableFuture"}:
+            return "String"
+        if normalized in {"List", "Set", "Collection", "Iterable"}:
+            return "[String!]"
         mapping = {
             "String": "String!",
             "Integer": "Int!",
@@ -1163,6 +1187,14 @@ class BackendDiscoveryEngine:
             cleaned = cleaned[1:]
         cleaned = cleaned.split("(", 1)[0]
         return cleaned.split(".")[-1]
+
+    def _graphql_field_name(self, name: str) -> str:
+        if "_" not in name:
+            return name
+        parts = [part for part in name.split("_") if part]
+        if not parts:
+            return name
+        return parts[0] + "".join(part[:1].upper() + part[1:] for part in parts[1:])
 
 
 class _PythonDiscoveryVisitor(ast.NodeVisitor):
@@ -1362,7 +1394,7 @@ class _PythonDiscoveryVisitor(ast.NodeVisitor):
         selection = self._graphql_selection_for_annotation(node.returns)
         variable_signature = self._graphql_variable_signature(node)
         field_arguments = self._graphql_field_arguments(node)
-        field_line = f"{node.name}{field_arguments}{selection}"
+        field_line = f"{self._graphql_field_name(node.name)}{field_arguments}{selection}"
         if operation == "mutation":
             return f"mutation {node.name}Operation{variable_signature} {{\n  {field_line}\n}}"
         return f"query {node.name}Query{variable_signature} {{\n  {field_line}\n}}"
@@ -1392,6 +1424,14 @@ class _PythonDiscoveryVisitor(ast.NodeVisitor):
         if not arguments:
             return ""
         return "(" + ", ".join(arguments) + ")"
+
+    def _graphql_field_name(self, name: str) -> str:
+        if "_" not in name:
+            return name
+        parts = [part for part in name.split("_") if part]
+        if not parts:
+            return name
+        return parts[0] + "".join(part[:1].upper() + part[1:] for part in parts[1:])
 
     def _example_response_for_function(self, node: ast.FunctionDef) -> Optional[Dict[str, Any]]:
         """Generate an example response body based on the function's return type."""
@@ -1731,7 +1771,7 @@ class _PythonDiscoveryVisitor(ast.NodeVisitor):
         if annotation is None:
             return "String"
         if isinstance(annotation, ast.Name):
-            return {
+            scalar_type = {
                 "str": "String!",
                 "ID": "ID!",
                 "int": "Int!",
@@ -1739,14 +1779,17 @@ class _PythonDiscoveryVisitor(ast.NodeVisitor):
                 "bool": "Boolean!",
                 "dict": "JSON!",
                 "list": "[String!]",
-            }.get(annotation.id, annotation.id)
+            }.get(annotation.id)
+            if scalar_type is not None:
+                return scalar_type
+            return f"{annotation.id}!"
         if isinstance(annotation, ast.Attribute):
             if annotation.attr == "ID":
                 return "ID!"
-            return annotation.attr
+            return f"{annotation.attr}!"
         if isinstance(annotation, ast.Constant) and isinstance(annotation.value, str):
             value = annotation.value.split(".")[-1]
-            return "ID!" if value == "ID" else value
+            return "ID!" if value == "ID" else f"{value}!"
         if isinstance(annotation, ast.Subscript):
             container = self._name_from_expr(annotation.value).split(".")[-1]
             inner = self._subscript_elements(annotation)

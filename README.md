@@ -33,6 +33,33 @@ python cli.py /path/to/backend/codebase
 python cli.py --cli /path/to/backend/codebase functional_test_config.sample.json
 ```
 
+### Running Tests
+
+Run the Robot Framework suites and generate Robot-style HTML reports:
+
+```bash
+python3 run_robot_tests.py
+```
+
+By default this creates:
+
+- `robot_results/output.xml`
+- `robot_results/report.html`
+- `robot_results/log.html`
+
+Each Robot test now includes:
+
+- a short plain-English test name
+- a `Documentation` line shown in the Robot report
+- step-level log messages shown in `log.html`
+
+If you want only one suite:
+
+```bash
+python3 run_robot_tests.py --suite robot_tests/unit_tests.robot
+python3 run_robot_tests.py --suite robot_tests/functional_tests.robot
+```
+
 ### Example Output
 
 ```

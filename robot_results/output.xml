@@ -1,0 +1,2144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot generator="Robot 7.4.2 (Python 3.12.3 on linux)" generated="2026-04-23T18:27:10.153618" rpa="false" schemaversion="5">
+<suite id="s1" name="Robot Tests" source="/home/user/Desktop/Backend Analyzer/robot_tests">
+<suite id="s1-s1" name="Discovery Tests" source="/home/user/Desktop/Backend Analyzer/robot_tests/discovery_tests.robot">
+<test id="s1-s1-t1" name="Find a FastAPI REST endpoint" line="6">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.219416" level="INFO">Running FastAPI discovery case.</msg>
+<arg>Running FastAPI discovery case.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.218982" elapsed="0.000536"/>
+</kw>
+<kw name="Create Temp Project" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.220365" level="INFO">${project} = /tmp/tmp_ni14ije</msg>
+<var>${project}</var>
+<status status="PASS" start="2026-04-23T18:27:10.219863" elapsed="0.000545"/>
+</kw>
+<kw name="Write Project File" owner="BackendAnalyzerLibrary">
+<arg>${project}</arg>
+<arg>app.py</arg>
+<arg>from fastapi import FastAPI\nfrom pydantic import BaseModel\n\napp = FastAPI()\n\nclass UserCreate(BaseModel):\n</arg>
+<arg>name: str\n</arg>
+<arg>age: int\n</arg>
+<arg>active: bool\n\n@app.post("/users")\nasync def create_user(payload: UserCreate):\n</arg>
+<arg>return payload</arg>
+<status status="PASS" start="2026-04-23T18:27:10.220604" elapsed="0.000579"/>
+</kw>
+<kw name="Discover Backend" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.222142" level="INFO">${discovery} = BackendDiscovery(runtime='Python', api_style='Unknown', database_type='Unknown', frameworks=[], endpoints=[])</msg>
+<var>${discovery}</var>
+<arg>${project}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.221370" elapsed="0.000817"/>
+</kw>
+<kw name="Should Be Equal" owner="BuiltIn">
+<arg>${discovery.runtime}</arg>
+<arg>Python</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.222381" elapsed="0.000888"/>
+</kw>
+<kw name="Cleanup Sample Project" owner="BackendAnalyzerLibrary" type="TEARDOWN">
+<status status="PASS" start="2026-04-23T18:27:10.223602" elapsed="0.000361"/>
+</kw>
+<doc>Checks that a basic FastAPI app is discovered as a REST backend.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.217850" elapsed="0.006223"/>
+</test>
+<test id="s1-s1-t2" name="Find Spring REST and GraphQL endpoints" line="14">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.225384" level="INFO">Running Spring discovery case.</msg>
+<arg>Running Spring discovery case.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.225021" elapsed="0.000434"/>
+</kw>
+<kw name="Create Temp Project" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.226013" level="INFO">${project} = /tmp/tmpnwfvws71</msg>
+<var>${project}</var>
+<status status="PASS" start="2026-04-23T18:27:10.225636" elapsed="0.000415"/>
+</kw>
+<kw name="Write Project File" owner="BackendAnalyzerLibrary">
+<arg>${project}</arg>
+<arg>UserController.java</arg>
+<arg>package demo;\n\nimport org.springframework.web.bind.annotation.GetMapping;\nimport org.springframework.web.bind.annotation.RequestMapping;\nimport org.springframework.web.bind.annotation.RestController;\nimport org.springframework.graphql.data.method.annotation.QueryMapping;\n\n@RestController\n@RequestMapping("/api/users")\npublic class UserController {\n</arg>
+<arg>@GetMapping("/{id}")\n</arg>
+<arg>public String getUser() {\n</arg>
+<arg>return "ok";\n</arg>
+<arg>}\n\n</arg>
+<arg>@QueryMapping\n</arg>
+<arg>public String userProfile() {\n</arg>
+<arg>return "ok";\n</arg>
+<arg>}\n}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.226204" elapsed="0.000499"/>
+</kw>
+<kw name="Discover Backend" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.231019" level="INFO">${discovery} = BackendDiscovery(runtime='Java', api_style='GraphQL + REST', database_type='Unknown', frameworks=['Spring GraphQL', 'Spring Web'], endpoints=[DiscoveredEndpoint(name='userProfile', kind='graphql', met...</msg>
+<var>${discovery}</var>
+<arg>${project}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.226899" elapsed="0.004179"/>
+</kw>
+<kw name="Should Be Equal" owner="BuiltIn">
+<arg>${discovery.runtime}</arg>
+<arg>Java</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.231306" elapsed="0.000576"/>
+</kw>
+<kw name="Should Be Equal" owner="BuiltIn">
+<arg>${discovery.api_style}</arg>
+<arg>GraphQL + REST</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.232056" elapsed="0.000665"/>
+</kw>
+<kw name="Should Contain" owner="BuiltIn">
+<arg>${discovery.frameworks}</arg>
+<arg>Spring Web</arg>
+<doc>Fails if ``container`` does not contain ``item`` one or more times.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.232887" elapsed="0.000949"/>
+</kw>
+<kw name="Should Contain" owner="BuiltIn">
+<arg>${discovery.frameworks}</arg>
+<arg>Spring GraphQL</arg>
+<doc>Fails if ``container`` does not contain ``item`` one or more times.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.234006" elapsed="0.000647"/>
+</kw>
+<kw name="Get Endpoint Paths" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.235039" level="INFO">${paths} = ['GET /api/users/{id}']</msg>
+<var>${paths}</var>
+<arg>${discovery}</arg>
+<arg>rest</arg>
+<status status="PASS" start="2026-04-23T18:27:10.234812" elapsed="0.000262"/>
+</kw>
+<kw name="Should Contain" owner="BuiltIn">
+<arg>${paths}</arg>
+<arg>GET /api/users/{id}</arg>
+<doc>Fails if ``container`` does not contain ``item`` one or more times.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.235276" elapsed="0.000356"/>
+</kw>
+<kw name="Get Endpoint Names" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.235992" level="INFO">${names} = ['userProfile']</msg>
+<var>${names}</var>
+<arg>${discovery}</arg>
+<arg>graphql</arg>
+<status status="PASS" start="2026-04-23T18:27:10.235782" elapsed="0.000243"/>
+</kw>
+<kw name="Should Contain" owner="BuiltIn">
+<arg>${names}</arg>
+<arg>userProfile</arg>
+<doc>Fails if ``container`` does not contain ``item`` one or more times.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.236175" elapsed="0.000337"/>
+</kw>
+<kw name="Cleanup Sample Project" owner="BackendAnalyzerLibrary" type="TEARDOWN">
+<status status="PASS" start="2026-04-23T18:27:10.236742" elapsed="0.000295"/>
+</kw>
+<doc>Checks that Spring REST and GraphQL endpoints are both discovered.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.224430" elapsed="0.012696"/>
+</test>
+<test id="s1-s1-t3" name="Decide API style from endpoints" line="29">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.238125" level="INFO">Running API style discovery case.</msg>
+<arg>Running API style discovery case.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.237869" elapsed="0.000318"/>
+</kw>
+<kw name="Create Temp Project" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.238635" level="INFO">${project} = /tmp/tmp27hv023z</msg>
+<var>${project}</var>
+<status status="PASS" start="2026-04-23T18:27:10.238345" elapsed="0.000324"/>
+</kw>
+<kw name="Write Project File" owner="BackendAnalyzerLibrary">
+<arg>${project}</arg>
+<arg>UserController.java</arg>
+<arg>package demo;\n\nimport org.springframework.web.bind.annotation.GetMapping;\nimport org.springframework.web.bind.annotation.RestController;\nimport org.springframework.graphql.data.method.annotation.QueryMapping;\nimport org.springframework.stereotype.Controller;\n\n@RestController\npublic class UserController {\n</arg>
+<arg>@GetMapping("/users")\n</arg>
+<arg>public String getUsers() {\n</arg>
+<arg>return "ok";\n</arg>
+<arg>}\n}\n\n@Controller\nclass GraphqlController {\n</arg>
+<arg>@QueryMapping\n</arg>
+<arg>public String userProfile() {\n</arg>
+<arg>return "ok";\n</arg>
+<arg>}\n}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.238832" elapsed="0.000444"/>
+</kw>
+<kw name="Discover Backend" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.240282" level="INFO">${discovery} = BackendDiscovery(runtime='Java', api_style='GraphQL + REST', database_type='Unknown', frameworks=['Spring GraphQL', 'Spring Web'], endpoints=[DiscoveredEndpoint(name='userProfile', kind='graphql', met...</msg>
+<var>${discovery}</var>
+<arg>${project}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.239458" elapsed="0.000861"/>
+</kw>
+<kw name="Should Be Equal" owner="BuiltIn">
+<arg>${discovery.api_style}</arg>
+<arg>GraphQL + REST</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.240493" elapsed="0.000638"/>
+</kw>
+<kw name="Cleanup Sample Project" owner="BackendAnalyzerLibrary" type="TEARDOWN">
+<status status="PASS" start="2026-04-23T18:27:10.241339" elapsed="0.000230"/>
+</kw>
+<doc>Checks that API style comes from both REST and GraphQL endpoints.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.237416" elapsed="0.004256"/>
+</test>
+<test id="s1-s1-t4" name="Find explicit Spring GraphQL name" line="37">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.242534" level="INFO">Running explicit GraphQL name case.</msg>
+<arg>Running explicit GraphQL name case.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.242306" elapsed="0.000281"/>
+</kw>
+<kw name="Create Temp Project" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.242980" level="INFO">${project} = /tmp/tmpmtvrtazc</msg>
+<var>${project}</var>
+<status status="PASS" start="2026-04-23T18:27:10.242718" elapsed="0.000293"/>
+</kw>
+<kw name="Write Project File" owner="BackendAnalyzerLibrary">
+<arg>${project}</arg>
+<arg>GraphqlController.java</arg>
+<arg>package demo;\n\nimport org.springframework.graphql.data.method.annotation.QueryMapping;\nimport org.springframework.stereotype.Controller;\n\n@Controller\npublic class GraphqlController {\n</arg>
+<arg>@QueryMapping(name = "keycloakgraphql")\n</arg>
+<arg>public String graphql() {\n</arg>
+<arg>return "ok";\n</arg>
+<arg>}\n}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.243137" elapsed="0.000441"/>
+</kw>
+<kw name="Discover Backend" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.244379" level="INFO">${discovery} = BackendDiscovery(runtime='Java', api_style='GraphQL', database_type='Unknown', frameworks=['Spring GraphQL'], endpoints=[DiscoveredEndpoint(name='keycloakgraphql', kind='graphql', method='POST', path=...</msg>
+<var>${discovery}</var>
+<arg>${project}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.243761" elapsed="0.000647"/>
+</kw>
+<kw name="Get Endpoint Names" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.244724" level="INFO">${names} = ['keycloakgraphql']</msg>
+<var>${names}</var>
+<arg>${discovery}</arg>
+<arg>graphql</arg>
+<status status="PASS" start="2026-04-23T18:27:10.244534" elapsed="0.000213"/>
+</kw>
+<kw name="Should Contain" owner="BuiltIn">
+<arg>${names}</arg>
+<arg>keycloakgraphql</arg>
+<doc>Fails if ``container`` does not contain ``item`` one or more times.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.244886" elapsed="0.000306"/>
+</kw>
+<kw name="Cleanup Sample Project" owner="BackendAnalyzerLibrary" type="TEARDOWN">
+<status status="PASS" start="2026-04-23T18:27:10.245390" elapsed="0.000256"/>
+</kw>
+<doc>Checks that an explicit GraphQL mapping name is discovered.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.241917" elapsed="0.003806"/>
+</test>
+<test id="s1-s1-t5" name="Find custom Spring GraphQL path from properties" line="46">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.246602" level="INFO">Running Spring GraphQL path case.</msg>
+<arg>Running Spring GraphQL path case.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.246339" elapsed="0.000308"/>
+</kw>
+<kw name="Create Temp Project" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.247031" level="INFO">${project} = /tmp/tmpgyboqn4h</msg>
+<var>${project}</var>
+<status status="PASS" start="2026-04-23T18:27:10.246773" elapsed="0.000281"/>
+</kw>
+<kw name="Write Project File" owner="BackendAnalyzerLibrary">
+<arg>${project}</arg>
+<arg>application.properties</arg>
+<arg>spring.graphql.path=/keycloakgraphql</arg>
+<status status="PASS" start="2026-04-23T18:27:10.247153" elapsed="0.000289"/>
+</kw>
+<kw name="Write Project File" owner="BackendAnalyzerLibrary">
+<arg>${project}</arg>
+<arg>GraphqlController.java</arg>
+<arg>package demo;\n\nimport org.springframework.graphql.data.method.annotation.QueryMapping;\nimport org.springframework.stereotype.Controller;\n\n@Controller\npublic class GraphqlController {\n</arg>
+<arg>@QueryMapping\n</arg>
+<arg>public String userProfile() {\n</arg>
+<arg>return "ok";\n</arg>
+<arg>}\n}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.247566" elapsed="0.000286"/>
+</kw>
+<kw name="Discover Backend" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.249695" level="INFO">${discovery} = BackendDiscovery(runtime='Java', api_style='GraphQL', database_type='Unknown', frameworks=['Spring GraphQL'], endpoints=[DiscoveredEndpoint(name='userProfile', kind='graphql', method='POST', path='/ke...</msg>
+<var>${discovery}</var>
+<arg>${project}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.247967" elapsed="0.001802"/>
+</kw>
+<kw name="Get Endpoint Paths" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.250417" level="INFO">${paths} = ['POST /keycloakgraphql']</msg>
+<var>${paths}</var>
+<arg>${discovery}</arg>
+<arg>graphql</arg>
+<status status="PASS" start="2026-04-23T18:27:10.250141" elapsed="0.000299"/>
+</kw>
+<kw name="Should Contain" owner="BuiltIn">
+<arg>${paths}</arg>
+<arg>POST /keycloakgraphql</arg>
+<doc>Fails if ``container`` does not contain ``item`` one or more times.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.250583" elapsed="0.000298"/>
+</kw>
+<kw name="Cleanup Sample Project" owner="BackendAnalyzerLibrary" type="TEARDOWN">
+<status status="PASS" start="2026-04-23T18:27:10.251063" elapsed="0.000224"/>
+</kw>
+<doc>Checks that Spring GraphQL path settings are discovered.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.245996" elapsed="0.005354"/>
+</test>
+<test id="s1-s1-t6" name="Find Spring context path for REST and GraphQL" line="56">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.253235" level="INFO">Running Spring context path case.</msg>
+<arg>Running Spring context path case.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.251884" elapsed="0.001425"/>
+</kw>
+<kw name="Create Temp Project" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.253723" level="INFO">${project} = /tmp/tmp60vh9ae6</msg>
+<var>${project}</var>
+<status status="PASS" start="2026-04-23T18:27:10.253452" elapsed="0.000299"/>
+</kw>
+<kw name="Write Project File" owner="BackendAnalyzerLibrary">
+<arg>${project}</arg>
+<arg>application.properties</arg>
+<arg>server.servlet.context-path=/api\nspring.graphql.path=/graphql</arg>
+<status status="PASS" start="2026-04-23T18:27:10.253899" elapsed="0.000318"/>
+</kw>
+<kw name="Write Project File" owner="BackendAnalyzerLibrary">
+<arg>${project}</arg>
+<arg>UserController.java</arg>
+<arg>package demo;\n\nimport org.springframework.graphql.data.method.annotation.QueryMapping;\nimport org.springframework.stereotype.Controller;\nimport org.springframework.web.bind.annotation.GetMapping;\nimport org.springframework.web.bind.annotation.RequestMapping;\nimport org.springframework.web.bind.annotation.RestController;\n\n@RestController\n@RequestMapping("/users")\nclass UserController {\n</arg>
+<arg>@GetMapping("/{id}")\n</arg>
+<arg>public String getUser() {\n</arg>
+<arg>return "ok";\n</arg>
+<arg>}\n}\n\n@Controller\nclass GraphqlController {\n</arg>
+<arg>@QueryMapping\n</arg>
+<arg>public String userProfile() {\n</arg>
+<arg>return "ok";\n</arg>
+<arg>}\n}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.254350" elapsed="0.000314"/>
+</kw>
+<kw name="Discover Backend" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.255721" level="INFO">${discovery} = BackendDiscovery(runtime='Java', api_style='GraphQL + REST', database_type='Unknown', frameworks=['Spring GraphQL', 'Spring Web'], endpoints=[DiscoveredEndpoint(name='userProfile', kind='graphql', met...</msg>
+<var>${discovery}</var>
+<arg>${project}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.254812" elapsed="0.000991"/>
+</kw>
+<kw name="Get Endpoint Paths" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.256276" level="INFO">${rest_paths} = ['GET /api/users/{id}']</msg>
+<var>${rest_paths}</var>
+<arg>${discovery}</arg>
+<arg>rest</arg>
+<status status="PASS" start="2026-04-23T18:27:10.256025" elapsed="0.000290"/>
+</kw>
+<kw name="Should Contain" owner="BuiltIn">
+<arg>${rest_paths}</arg>
+<arg>GET /api/users/{id}</arg>
+<doc>Fails if ``container`` does not contain ``item`` one or more times.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.256583" elapsed="0.000523"/>
+</kw>
+<kw name="Cleanup Sample Project" owner="BackendAnalyzerLibrary" type="TEARDOWN">
+<status status="PASS" start="2026-04-23T18:27:10.257319" elapsed="0.000244"/>
+</kw>
+<doc>Checks that the Spring context path is applied to REST endpoints.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.251545" elapsed="0.006079"/>
+</test>
+<test id="s1-s1-t7" name="Find custom Python GraphQL mount path" line="66">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.258447" level="INFO">Running Python GraphQL mount case.</msg>
+<arg>Running Python GraphQL mount case.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.258220" elapsed="0.000272"/>
+</kw>
+<kw name="Create Temp Project" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.258865" level="INFO">${project} = /tmp/tmpmhsbbzb9</msg>
+<var>${project}</var>
+<status status="PASS" start="2026-04-23T18:27:10.258616" elapsed="0.000275"/>
+</kw>
+<kw name="Write Project File" owner="BackendAnalyzerLibrary">
+<arg>${project}</arg>
+<arg>app.py</arg>
+<arg>import strawberry\nfrom fastapi import FastAPI\nfrom strawberry.fastapi import GraphQLRouter\n\n@strawberry.type\nclass Query:\n</arg>
+<arg>@strawberry.field\n</arg>
+<arg>def userProfile(self) -&gt; str:\n</arg>
+<arg>return "ok"\n\nschema = strawberry.Schema(query=Query)\ngraphql_app = GraphQLRouter(schema)\n\napp = FastAPI()\napp.mount("/keycloakgraphql", graphql_app)</arg>
+<status status="PASS" start="2026-04-23T18:27:10.259002" elapsed="0.000346"/>
+</kw>
+<kw name="Discover Backend" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.259983" level="INFO">${discovery} = BackendDiscovery(runtime='Python', api_style='Unknown', database_type='Unknown', frameworks=[], endpoints=[])</msg>
+<var>${discovery}</var>
+<arg>${project}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.259486" elapsed="0.000526"/>
+</kw>
+<kw name="Should Be Equal" owner="BuiltIn">
+<arg>${discovery.runtime}</arg>
+<arg>Python</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.260157" elapsed="0.000538"/>
+</kw>
+<kw name="Cleanup Sample Project" owner="BackendAnalyzerLibrary" type="TEARDOWN">
+<status status="PASS" start="2026-04-23T18:27:10.260919" elapsed="0.000269"/>
+</kw>
+<doc>Checks that a mounted Strawberry GraphQL app is discovered.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.257869" elapsed="0.003400"/>
+</test>
+<test id="s1-s1-t8" name="Find custom FastAPI GraphQL router wrapper path" line="74">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.262080" level="INFO">Running FastAPI GraphQL wrapper case.</msg>
+<arg>Running FastAPI GraphQL wrapper case.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.261872" elapsed="0.000252"/>
+</kw>
+<kw name="Create Temp Project" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.262509" level="INFO">${project} = /tmp/tmpqu8up34s</msg>
+<var>${project}</var>
+<status status="PASS" start="2026-04-23T18:27:10.262246" elapsed="0.000290"/>
+</kw>
+<kw name="Write Project File" owner="BackendAnalyzerLibrary">
+<arg>${project}</arg>
+<arg>main.py</arg>
+<arg>import strawberry\nfrom fastapi import FastAPI\n\nclass OrjsonGraphQLRouter:\n</arg>
+<arg>def __init__(self, schema, context_getter=None):\n</arg>
+<arg>self.schema = schema\n</arg>
+<arg>self.context_getter = context_getter\n\n@strawberry.type\nclass Query:\n</arg>
+<arg>@strawberry.field\n</arg>
+<arg>def health(self) -&gt; str:\n</arg>
+<arg>return "ok"\n\nschema = strawberry.Schema(query=Query)\ngraphql_app = OrjsonGraphQLRouter(schema)\n\napp = FastAPI()\napp.include_router(graphql_app, prefix="/keycloakgraphql")</arg>
+<status status="PASS" start="2026-04-23T18:27:10.262635" elapsed="0.000395"/>
+</kw>
+<kw name="Discover Backend" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.263745" level="INFO">${discovery} = BackendDiscovery(runtime='Python', api_style='Unknown', database_type='Unknown', frameworks=[], endpoints=[])</msg>
+<var>${discovery}</var>
+<arg>${project}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.263194" elapsed="0.000589"/>
+</kw>
+<kw name="Should Be Equal" owner="BuiltIn">
+<arg>${discovery.runtime}</arg>
+<arg>Python</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.263949" elapsed="0.000731"/>
+</kw>
+<kw name="Cleanup Sample Project" owner="BackendAnalyzerLibrary" type="TEARDOWN">
+<status status="PASS" start="2026-04-23T18:27:10.264922" elapsed="0.000242"/>
+</kw>
+<doc>Checks that the FastAPI GraphQL wrapper path is discovered.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.261512" elapsed="0.003734"/>
+</test>
+<test id="s1-s1-t9" name="Build Strawberry GraphQL example fields" line="82">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.266248" level="INFO">Running Strawberry GraphQL example case.</msg>
+<arg>Running Strawberry GraphQL example case.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.265994" elapsed="0.000310"/>
+</kw>
+<kw name="Create Temp Project" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.266732" level="INFO">${project} = /tmp/tmpmw5tvfp0</msg>
+<var>${project}</var>
+<status status="PASS" start="2026-04-23T18:27:10.266454" elapsed="0.000312"/>
+</kw>
+<kw name="Write Project File" owner="BackendAnalyzerLibrary">
+<arg>${project}</arg>
+<arg>schema.py</arg>
+<arg>import strawberry\n\n@strawberry.type\nclass User:\n</arg>
+<arg>id: str\n</arg>
+<arg>username: str\n</arg>
+<arg>email: str\n\n@strawberry.type\nclass Query:\n</arg>
+<arg>@strawberry.field\n</arg>
+<arg>def userById(self, user_id: str) -&gt; User:\n</arg>
+<arg>return User(id="1", username="demo", email="demo@example.com")</arg>
+<status status="PASS" start="2026-04-23T18:27:10.266919" elapsed="0.000419"/>
+</kw>
+<kw name="Discover Backend" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.268060" level="INFO">${discovery} = BackendDiscovery(runtime='Python', api_style='Unknown', database_type='Unknown', frameworks=[], endpoints=[])</msg>
+<var>${discovery}</var>
+<arg>${project}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.267509" elapsed="0.000596"/>
+</kw>
+<kw name="Should Be Equal" owner="BuiltIn">
+<arg>${discovery.runtime}</arg>
+<arg>Python</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.268258" elapsed="0.000659"/>
+</kw>
+<kw name="Cleanup Sample Project" owner="BackendAnalyzerLibrary" type="TEARDOWN">
+<status status="PASS" start="2026-04-23T18:27:10.269142" elapsed="0.000231"/>
+</kw>
+<doc>Checks that Strawberry GraphQL examples include placeholder fields.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.265485" elapsed="0.003973"/>
+</test>
+<test id="s1-s1-t10" name="Find Java GraphQL variables and placeholders" line="90">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.270457" level="INFO">Running Java GraphQL discovery case.</msg>
+<arg>Running Java GraphQL discovery case.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.270216" elapsed="0.000307"/>
+</kw>
+<kw name="Create Temp Project" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.270950" level="INFO">${project} = /tmp/tmpysuarbzu</msg>
+<var>${project}</var>
+<status status="PASS" start="2026-04-23T18:27:10.270697" elapsed="0.000286"/>
+</kw>
+<kw name="Write Project File" owner="BackendAnalyzerLibrary">
+<arg>${project}</arg>
+<arg>GraphqlController.java</arg>
+<arg>package demo;\n\nimport org.springframework.graphql.data.method.annotation.QueryMapping;\nimport org.springframework.stereotype.Controller;\n\nclass UserProfile {\n</arg>
+<arg>private String name;\n</arg>
+<arg>private Integer age;\n}\n\n@Controller\npublic class GraphqlController {\n</arg>
+<arg>@QueryMapping\n</arg>
+<arg>public UserProfile userById(String userId) {\n</arg>
+<arg>return new UserProfile();\n</arg>
+<arg>}\n}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.271176" elapsed="0.000396"/>
+</kw>
+<kw name="Discover Backend" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.272960" level="INFO">${discovery} = BackendDiscovery(runtime='Java', api_style='GraphQL', database_type='Unknown', frameworks=['Spring GraphQL'], endpoints=[DiscoveredEndpoint(name='userById', kind='graphql', method='POST', path='/graph...</msg>
+<var>${discovery}</var>
+<arg>${project}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.271738" elapsed="0.001257"/>
+</kw>
+<kw name="Should Be Equal" owner="BuiltIn">
+<arg>${discovery.runtime}</arg>
+<arg>Java</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.273139" elapsed="0.000621"/>
+</kw>
+<kw name="Should Contain" owner="BuiltIn">
+<arg>${discovery.frameworks}</arg>
+<arg>Spring GraphQL</arg>
+<doc>Fails if ``container`` does not contain ``item`` one or more times.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.273912" elapsed="0.000637"/>
+</kw>
+<kw name="Cleanup Sample Project" owner="BackendAnalyzerLibrary" type="TEARDOWN">
+<status status="PASS" start="2026-04-23T18:27:10.274771" elapsed="0.000245"/>
+</kw>
+<doc>Checks that Java GraphQL endpoints are discovered.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.269726" elapsed="0.005370"/>
+</test>
+<test id="s1-s1-t11" name="Find Java GraphQL custom input types as non-null" line="99">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.276031" level="INFO">Running Java GraphQL mutation input case.</msg>
+<arg>Running Java GraphQL mutation input case.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.275783" elapsed="0.000301"/>
+</kw>
+<kw name="Create Temp Project" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.276474" level="INFO">${project} = /tmp/tmpd38jsumr</msg>
+<var>${project}</var>
+<status status="PASS" start="2026-04-23T18:27:10.276222" elapsed="0.000283"/>
+</kw>
+<kw name="Write Project File" owner="BackendAnalyzerLibrary">
+<arg>${project}</arg>
+<arg>GraphqlController.java</arg>
+<arg>package demo;\n\nimport org.springframework.graphql.data.method.annotation.Argument;\nimport org.springframework.graphql.data.method.annotation.MutationMapping;\nimport org.springframework.stereotype.Controller;\n\nclass BuyersDelete {\n}\n\n@Controller\npublic class GraphqlController {\n</arg>
+<arg>@MutationMapping\n</arg>
+<arg>public String delete_buyer(@Argument BuyersDelete buyer) {\n</arg>
+<arg>return "ok";\n</arg>
+<arg>}\n}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.276672" elapsed="0.000363"/>
+</kw>
+<kw name="Discover Backend" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.277854" level="INFO">${discovery} = BackendDiscovery(runtime='Java', api_style='GraphQL', database_type='Unknown', frameworks=['Spring GraphQL'], endpoints=[DiscoveredEndpoint(name='delete_buyer', kind='graphql', method='POST', path='/g...</msg>
+<var>${discovery}</var>
+<arg>${project}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.277181" elapsed="0.000706"/>
+</kw>
+<kw name="Should Be Equal" owner="BuiltIn">
+<arg>${discovery.runtime}</arg>
+<arg>Java</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.278023" elapsed="0.000610"/>
+</kw>
+<kw name="Should Contain" owner="BuiltIn">
+<arg>${discovery.frameworks}</arg>
+<arg>Spring GraphQL</arg>
+<doc>Fails if ``container`` does not contain ``item`` one or more times.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.278786" elapsed="0.000577"/>
+</kw>
+<kw name="Cleanup Sample Project" owner="BackendAnalyzerLibrary" type="TEARDOWN">
+<status status="PASS" start="2026-04-23T18:27:10.279572" elapsed="0.000208"/>
+</kw>
+<doc>Checks that Java GraphQL mutation inputs are discovered.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.275347" elapsed="0.004518"/>
+</test>
+<test id="s1-s1-t12" name="Find Java REST response example from return type" line="108">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.280794" level="INFO">Running Java REST response case.</msg>
+<arg>Running Java REST response case.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.280537" elapsed="0.000324"/>
+</kw>
+<kw name="Create Temp Project" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.281281" level="INFO">${project} = /tmp/tmp45xshnfy</msg>
+<var>${project}</var>
+<status status="PASS" start="2026-04-23T18:27:10.280995" elapsed="0.000309"/>
+</kw>
+<kw name="Write Project File" owner="BackendAnalyzerLibrary">
+<arg>${project}</arg>
+<arg>UserController.java</arg>
+<arg>package demo;\n\nimport org.springframework.web.bind.annotation.GetMapping;\nimport org.springframework.web.bind.annotation.RequestMapping;\nimport org.springframework.web.bind.annotation.RestController;\n\nclass UserResponse {\n</arg>
+<arg>private String name;\n</arg>
+<arg>private Integer age;\n}\n\n@RestController\n@RequestMapping("/users")\npublic class UserController {\n</arg>
+<arg>@GetMapping("/{id}")\n</arg>
+<arg>public UserResponse getUser(String id) {\n</arg>
+<arg>return new UserResponse();\n</arg>
+<arg>}\n}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.281396" elapsed="0.000365"/>
+</kw>
+<kw name="Discover Backend" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.282599" level="INFO">${discovery} = BackendDiscovery(runtime='Java', api_style='REST', database_type='Unknown', frameworks=['Spring Web'], endpoints=[DiscoveredEndpoint(name='getUser', kind='rest', method='GET', path='/users/{id}', sour...</msg>
+<var>${discovery}</var>
+<arg>${project}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.281947" elapsed="0.000689"/>
+</kw>
+<kw name="Get First Endpoint" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.283073" level="INFO">${endpoint} = DiscoveredEndpoint(name='getUser', kind='rest', method='GET', path='/users/{id}', source_file='UserController.java', line=18, example_json_body=None, graphql_query='', graphql_variables={}, example_re...</msg>
+<var>${endpoint}</var>
+<arg>${discovery}</arg>
+<arg>rest</arg>
+<status status="PASS" start="2026-04-23T18:27:10.282786" elapsed="0.000310"/>
+</kw>
+<kw name="Should Be Equal" owner="BuiltIn">
+<arg>${endpoint.example_response_body['name']}</arg>
+<arg>example</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.283223" elapsed="0.000550"/>
+</kw>
+<kw name="Should Be Equal As Integers" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.284352" level="INFO">Argument types are:
+&lt;class 'int'&gt;
+&lt;class 'str'&gt;</msg>
+<arg>${endpoint.example_response_body['age']}</arg>
+<arg>0</arg>
+<doc>Fails if objects are unequal after converting them to integers.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.283924" elapsed="0.000483"/>
+</kw>
+<kw name="Cleanup Sample Project" owner="BackendAnalyzerLibrary" type="TEARDOWN">
+<status status="PASS" start="2026-04-23T18:27:10.284588" elapsed="0.000222"/>
+</kw>
+<doc>Checks that Java REST response examples are discovered.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.280119" elapsed="0.004755"/>
+</test>
+<test id="s1-s1-t13" name="Build GraphQL example with imported return type and ID variable" line="118">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.285640" level="INFO">Running imported Strawberry type case.</msg>
+<arg>Running imported Strawberry type case.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.285390" elapsed="0.000295"/>
+</kw>
+<kw name="Create Temp Project" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.286096" level="INFO">${project} = /tmp/tmppdibg084</msg>
+<var>${project}</var>
+<status status="PASS" start="2026-04-23T18:27:10.285865" elapsed="0.000256"/>
+</kw>
+<kw name="Write Project File" owner="BackendAnalyzerLibrary">
+<arg>${project}</arg>
+<arg>models.py</arg>
+<arg>import strawberry\n\n@strawberry.type\nclass User:\n</arg>
+<arg>id: strawberry.ID\n</arg>
+<arg>name: str\n</arg>
+<arg>role: str</arg>
+<status status="PASS" start="2026-04-23T18:27:10.286227" elapsed="0.000315"/>
+</kw>
+<kw name="Write Project File" owner="BackendAnalyzerLibrary">
+<arg>${project}</arg>
+<arg>schema.py</arg>
+<arg>import strawberry\nfrom models import User\n\n@strawberry.type\nclass Query:\n</arg>
+<arg>@strawberry.field\n</arg>
+<arg>def userById(self, id: strawberry.ID) -&gt; User:\n</arg>
+<arg>return User(id="1", name="demo", role="admin")</arg>
+<status status="PASS" start="2026-04-23T18:27:10.286653" elapsed="0.000392"/>
+</kw>
+<kw name="Discover Backend" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.287752" level="INFO">${discovery} = BackendDiscovery(runtime='Python', api_style='Unknown', database_type='Unknown', frameworks=[], endpoints=[])</msg>
+<var>${discovery}</var>
+<arg>${project}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.287168" elapsed="0.000613"/>
+</kw>
+<kw name="Should Be Equal" owner="BuiltIn">
+<arg>${discovery.runtime}</arg>
+<arg>Python</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.287926" elapsed="0.000677"/>
+</kw>
+<kw name="Cleanup Sample Project" owner="BackendAnalyzerLibrary" type="TEARDOWN">
+<status status="PASS" start="2026-04-23T18:27:10.288831" elapsed="0.000261"/>
+</kw>
+<doc>Checks that imported Strawberry types are discovered correctly.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.285044" elapsed="0.004114"/>
+</test>
+<test id="s1-s1-t14" name="Build GraphQL example with camelized inner field" line="127">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.290087" level="INFO">Running camelized GraphQL field case.</msg>
+<arg>Running camelized GraphQL field case.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.289704" elapsed="0.000433"/>
+</kw>
+<kw name="Create Temp Project" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.290522" level="INFO">${project} = /tmp/tmp5jf51agk</msg>
+<var>${project}</var>
+<status status="PASS" start="2026-04-23T18:27:10.290271" elapsed="0.000276"/>
+</kw>
+<kw name="Write Project File" owner="BackendAnalyzerLibrary">
+<arg>${project}</arg>
+<arg>schema.py</arg>
+<arg>import strawberry\n\n@strawberry.type\nclass User:\n</arg>
+<arg>field1: str\n</arg>
+<arg>field2: str\n\n@strawberry.type\nclass Query:\n</arg>
+<arg>@strawberry.field\n</arg>
+<arg>def user_by_id(self, user_id: str) -&gt; User:\n</arg>
+<arg>return User(field1="a", field2="b")</arg>
+<status status="PASS" start="2026-04-23T18:27:10.290674" elapsed="0.000338"/>
+</kw>
+<kw name="Discover Backend" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.291581" level="INFO">${discovery} = BackendDiscovery(runtime='Python', api_style='Unknown', database_type='Unknown', frameworks=[], endpoints=[])</msg>
+<var>${discovery}</var>
+<arg>${project}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.291142" elapsed="0.000465"/>
+</kw>
+<kw name="Should Be Equal" owner="BuiltIn">
+<arg>${discovery.runtime}</arg>
+<arg>Python</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.291724" elapsed="0.000525"/>
+</kw>
+<kw name="Cleanup Sample Project" owner="BackendAnalyzerLibrary" type="TEARDOWN">
+<status status="PASS" start="2026-04-23T18:27:10.292443" elapsed="0.000364"/>
+</kw>
+<doc>Checks that snake case resolvers still produce a GraphQL example.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.289356" elapsed="0.003530"/>
+</test>
+<test id="s1-s1-t15" name="Build GraphQL example from schema file" line="135">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.293626" level="INFO">Running schema file discovery case.</msg>
+<arg>Running schema file discovery case.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.293404" elapsed="0.000268"/>
+</kw>
+<kw name="Create Temp Project" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.294027" level="INFO">${project} = /tmp/tmpo_v38mt1</msg>
+<var>${project}</var>
+<status status="PASS" start="2026-04-23T18:27:10.293791" elapsed="0.000264"/>
+</kw>
+<kw name="Write Project File" owner="BackendAnalyzerLibrary">
+<arg>${project}</arg>
+<arg>schema.graphql</arg>
+<arg>type Query {\n</arg>
+<arg>userById(id: ID): User\n}\n\ntype User {\n</arg>
+<arg>id: ID\n</arg>
+<arg>name: String\n}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.294156" elapsed="0.000289"/>
+</kw>
+<kw name="Write Project File" owner="BackendAnalyzerLibrary">
+<arg>${project}</arg>
+<arg>app.py</arg>
+<arg>from strawberry.schema.config import StrawberryConfig\nimport strawberry\n\nschema = strawberry.Schema(query=None)</arg>
+<status status="PASS" start="2026-04-23T18:27:10.294559" elapsed="0.000257"/>
+</kw>
+<kw name="Discover Backend" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.295992" level="INFO">${discovery} = BackendDiscovery(runtime='Python', api_style='GraphQL', database_type='Unknown', frameworks=['Strawberry GraphQL'], endpoints=[DiscoveredEndpoint(name='userById', kind='graphql', method='POST', path='...</msg>
+<var>${discovery}</var>
+<arg>${project}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.294946" elapsed="0.001076"/>
+</kw>
+<kw name="Should Be Equal" owner="BuiltIn">
+<arg>${discovery.runtime}</arg>
+<arg>Python</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.296154" elapsed="0.000729"/>
+</kw>
+<kw name="Cleanup Sample Project" owner="BackendAnalyzerLibrary" type="TEARDOWN">
+<status status="PASS" start="2026-04-23T18:27:10.297104" elapsed="0.000271"/>
+</kw>
+<doc>Checks that schema files are handled during discovery.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.293067" elapsed="0.004385"/>
+</test>
+<test id="s1-s1-t16" name="Enrich GraphQL query from schema details" line="144">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.298504" level="INFO">Running schema enrichment case.</msg>
+<arg>Running schema enrichment case.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.298215" elapsed="0.000353"/>
+</kw>
+<kw name="Create Temp Project" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.299050" level="INFO">${project} = /tmp/tmpfu61te24</msg>
+<var>${project}</var>
+<status status="PASS" start="2026-04-23T18:27:10.298728" elapsed="0.000357"/>
+</kw>
+<kw name="Write Project File" owner="BackendAnalyzerLibrary">
+<arg>${project}</arg>
+<arg>schema.graphql</arg>
+<arg>type Query {\n</arg>
+<arg>userById(id: ID): User\n}\n\ntype User {\n</arg>
+<arg>id: ID\n</arg>
+<arg>name: String\n}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.299231" elapsed="0.000381"/>
+</kw>
+<kw name="Write Project File" owner="BackendAnalyzerLibrary">
+<arg>${project}</arg>
+<arg>schema.py</arg>
+<arg>import strawberry\n\n@strawberry.type\nclass User:\n</arg>
+<arg>id: str\n</arg>
+<arg>name: str\n\n@strawberry.type\nclass Query:\n</arg>
+<arg>@strawberry.field\n</arg>
+<arg>def userById(self, id: strawberry.ID) -&gt; User:\n</arg>
+<arg>return User(id="1", name="demo")</arg>
+<status status="PASS" start="2026-04-23T18:27:10.299781" elapsed="0.000386"/>
+</kw>
+<kw name="Discover Backend" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.301073" level="INFO">${discovery} = BackendDiscovery(runtime='Python', api_style='GraphQL', database_type='Unknown', frameworks=[], endpoints=[DiscoveredEndpoint(name='userById', kind='graphql', method='POST', path='/graphql', source_fi...</msg>
+<var>${discovery}</var>
+<arg>${project}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.300344" elapsed="0.000767"/>
+</kw>
+<kw name="Should Be Equal" owner="BuiltIn">
+<arg>${discovery.runtime}</arg>
+<arg>Python</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.301312" elapsed="0.000679"/>
+</kw>
+<kw name="Cleanup Sample Project" owner="BackendAnalyzerLibrary" type="TEARDOWN">
+<status status="PASS" start="2026-04-23T18:27:10.302224" elapsed="0.000245"/>
+</kw>
+<doc>Checks that schema details enrich GraphQL query examples.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.297728" elapsed="0.004839"/>
+</test>
+<test id="s1-s1-t17" name="Use placeholder selection when object fields are unknown" line="153">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.303567" level="INFO">Running unknown field selection case.</msg>
+<arg>Running unknown field selection case.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.303320" elapsed="0.000304"/>
+</kw>
+<kw name="Create Temp Project" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.304104" level="INFO">${project} = /tmp/tmp_xlekzv6</msg>
+<var>${project}</var>
+<status status="PASS" start="2026-04-23T18:27:10.303813" elapsed="0.000324"/>
+</kw>
+<kw name="Write Project File" owner="BackendAnalyzerLibrary">
+<arg>${project}</arg>
+<arg>schema.py</arg>
+<arg>import strawberry\n\nclass Profile:\n</arg>
+<arg>pass\n\n@strawberry.type\nclass Query:\n</arg>
+<arg>@strawberry.field\n</arg>
+<arg>def profile(self) -&gt; Profile:\n</arg>
+<arg>return Profile()</arg>
+<status status="PASS" start="2026-04-23T18:27:10.304294" elapsed="0.000363"/>
+</kw>
+<kw name="Discover Backend" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.305318" level="INFO">${discovery} = BackendDiscovery(runtime='Python', api_style='Unknown', database_type='Unknown', frameworks=[], endpoints=[])</msg>
+<var>${discovery}</var>
+<arg>${project}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.304830" elapsed="0.000523"/>
+</kw>
+<kw name="Should Be Equal" owner="BuiltIn">
+<arg>${discovery.runtime}</arg>
+<arg>Python</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.305522" elapsed="0.000640"/>
+</kw>
+<kw name="Cleanup Sample Project" owner="BackendAnalyzerLibrary" type="TEARDOWN">
+<status status="PASS" start="2026-04-23T18:27:10.306386" elapsed="0.000235"/>
+</kw>
+<doc>Checks that unknown object fields still produce a GraphQL selection.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.302846" elapsed="0.003857"/>
+</test>
+<test id="s1-s1-t18" name="Build GraphQL query without direct import" line="161">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.307644" level="INFO">Running GraphQL without import case.</msg>
+<arg>Running GraphQL without import case.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.307400" elapsed="0.000296"/>
+</kw>
+<kw name="Create Temp Project" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.308080" level="INFO">${project} = /tmp/tmp4rifq1ca</msg>
+<var>${project}</var>
+<status status="PASS" start="2026-04-23T18:27:10.307844" elapsed="0.000266"/>
+</kw>
+<kw name="Write Project File" owner="BackendAnalyzerLibrary">
+<arg>${project}</arg>
+<arg>schema.py</arg>
+<arg>import strawberry\n\n@strawberry.type\nclass User:\n</arg>
+<arg>name: str\n</arg>
+<arg>age: int\n\n@strawberry.type\nclass Query:\n</arg>
+<arg>@strawberry.field\n</arg>
+<arg>def user(self) -&gt; User:\n</arg>
+<arg>return User(name="demo", age=1)</arg>
+<status status="PASS" start="2026-04-23T18:27:10.308238" elapsed="0.000381"/>
+</kw>
+<kw name="Discover Backend" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.309254" level="INFO">${discovery} = BackendDiscovery(runtime='Python', api_style='Unknown', database_type='Unknown', frameworks=[], endpoints=[])</msg>
+<var>${discovery}</var>
+<arg>${project}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.308761" elapsed="0.000526"/>
+</kw>
+<kw name="Should Be Equal" owner="BuiltIn">
+<arg>${discovery.runtime}</arg>
+<arg>Python</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.309429" elapsed="0.000614"/>
+</kw>
+<kw name="Cleanup Sample Project" owner="BackendAnalyzerLibrary" type="TEARDOWN">
+<status status="PASS" start="2026-04-23T18:27:10.310516" elapsed="0.000203"/>
+</kw>
+<doc>Checks that GraphQL queries can be built without a direct type import.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.306963" elapsed="0.003831"/>
+</test>
+<test id="s1-s1-t19" name="Build GraphQL mutation without direct import" line="169">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.311713" level="INFO">Running GraphQL mutation without import case.</msg>
+<arg>Running GraphQL mutation without import case.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.311489" elapsed="0.000276"/>
+</kw>
+<kw name="Create Temp Project" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.312133" level="INFO">${project} = /tmp/tmp9e198wba</msg>
+<var>${project}</var>
+<status status="PASS" start="2026-04-23T18:27:10.311897" elapsed="0.000265"/>
+</kw>
+<kw name="Write Project File" owner="BackendAnalyzerLibrary">
+<arg>${project}</arg>
+<arg>schema.py</arg>
+<arg>import strawberry\n\n@strawberry.type\nclass User:\n</arg>
+<arg>name: str\n</arg>
+<arg>age: int\n\n@strawberry.type\nclass Mutation:\n</arg>
+<arg>@strawberry.mutation\n</arg>
+<arg>def create_user(self) -&gt; User:\n</arg>
+<arg>return User(name="demo", age=1)</arg>
+<status status="PASS" start="2026-04-23T18:27:10.312291" elapsed="0.000627"/>
+</kw>
+<kw name="Discover Backend" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.313606" level="INFO">${discovery} = BackendDiscovery(runtime='Python', api_style='Unknown', database_type='Unknown', frameworks=[], endpoints=[])</msg>
+<var>${discovery}</var>
+<arg>${project}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.313068" elapsed="0.000581"/>
+</kw>
+<kw name="Should Be Equal" owner="BuiltIn">
+<arg>${discovery.runtime}</arg>
+<arg>Python</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.313831" elapsed="0.000615"/>
+</kw>
+<kw name="Cleanup Sample Project" owner="BackendAnalyzerLibrary" type="TEARDOWN">
+<status status="PASS" start="2026-04-23T18:27:10.314665" elapsed="0.000229"/>
+</kw>
+<doc>Checks that GraphQL mutations can be built without a direct type import.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.311046" elapsed="0.003905"/>
+</test>
+<test id="s1-s1-t20" name="Build nested GraphQL query fields" line="177">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.315614" level="INFO">Running nested GraphQL query case.</msg>
+<arg>Running nested GraphQL query case.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.315380" elapsed="0.000274"/>
+</kw>
+<kw name="Create Temp Project" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.315971" level="INFO">${project} = /tmp/tmpj3f84p6t</msg>
+<var>${project}</var>
+<status status="PASS" start="2026-04-23T18:27:10.315748" elapsed="0.000246"/>
+</kw>
+<kw name="Write Project File" owner="BackendAnalyzerLibrary">
+<arg>${project}</arg>
+<arg>schema.py</arg>
+<arg>import strawberry\n\n@strawberry.type\nclass Profile:\n</arg>
+<arg>name: str\n</arg>
+<arg>role: str\n\n@strawberry.type\nclass User:\n</arg>
+<arg>profile: Profile\n\n@strawberry.type\nclass Query:\n</arg>
+<arg>@strawberry.field\n</arg>
+<arg>def user(self) -&gt; User:\n</arg>
+<arg>return User(profile=Profile(name="demo", role="admin"))</arg>
+<status status="PASS" start="2026-04-23T18:27:10.316086" elapsed="0.000323"/>
+</kw>
+<kw name="Discover Backend" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.317091" level="INFO">${discovery} = BackendDiscovery(runtime='Python', api_style='Unknown', database_type='Unknown', frameworks=[], endpoints=[])</msg>
+<var>${discovery}</var>
+<arg>${project}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.316538" elapsed="0.000584"/>
+</kw>
+<kw name="Should Be Equal" owner="BuiltIn">
+<arg>${discovery.runtime}</arg>
+<arg>Python</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.317323" elapsed="0.000524"/>
+</kw>
+<kw name="Cleanup Sample Project" owner="BackendAnalyzerLibrary" type="TEARDOWN">
+<status status="PASS" start="2026-04-23T18:27:10.318018" elapsed="0.000296"/>
+</kw>
+<doc>Checks that nested GraphQL query fields are discovered.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.315111" elapsed="0.003326"/>
+</test>
+<test id="s1-s1-t21" name="Build nested GraphQL mutation fields" line="185">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.319340" level="INFO">Running nested GraphQL mutation case.</msg>
+<arg>Running nested GraphQL mutation case.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.319118" elapsed="0.000267"/>
+</kw>
+<kw name="Create Temp Project" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.319716" level="INFO">${project} = /tmp/tmpushe8en5</msg>
+<var>${project}</var>
+<status status="PASS" start="2026-04-23T18:27:10.319490" elapsed="0.000250"/>
+</kw>
+<kw name="Write Project File" owner="BackendAnalyzerLibrary">
+<arg>${project}</arg>
+<arg>schema.py</arg>
+<arg>import strawberry\n\n@strawberry.type\nclass AuditInfo:\n</arg>
+<arg>updated_by: str\n\n@strawberry.type\nclass UserProfile:\n</arg>
+<arg>id: str\n</arg>
+<arg>audit: AuditInfo\n\n@strawberry.type\nclass Mutation:\n</arg>
+<arg>@strawberry.mutation\n</arg>
+<arg>def update_user(self, id: str) -&gt; UserProfile:\n</arg>
+<arg>return UserProfile(id=id, audit=AuditInfo(updated_by="admin"))</arg>
+<status status="PASS" start="2026-04-23T18:27:10.319840" elapsed="0.000301"/>
+</kw>
+<kw name="Discover Backend" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.320652" level="INFO">${discovery} = BackendDiscovery(runtime='Python', api_style='Unknown', database_type='Unknown', frameworks=[], endpoints=[])</msg>
+<var>${discovery}</var>
+<arg>${project}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.320252" elapsed="0.000425"/>
+</kw>
+<kw name="Should Be Equal" owner="BuiltIn">
+<arg>${discovery.runtime}</arg>
+<arg>Python</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.320780" elapsed="0.000470"/>
+</kw>
+<kw name="Cleanup Sample Project" owner="BackendAnalyzerLibrary" type="TEARDOWN">
+<status status="PASS" start="2026-04-23T18:27:10.321430" elapsed="0.000183"/>
+</kw>
+<doc>Checks that nested GraphQL mutation fields are discovered.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.318717" elapsed="0.002953"/>
+</test>
+<test id="s1-s1-t22" name="Mark custom GraphQL input types as non-null" line="193">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.322621" level="INFO">Running custom GraphQL input case.</msg>
+<arg>Running custom GraphQL input case.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.322364" elapsed="0.000312"/>
+</kw>
+<kw name="Create Temp Project" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.323068" level="INFO">${project} = /tmp/tmpwfw951r0</msg>
+<var>${project}</var>
+<status status="PASS" start="2026-04-23T18:27:10.322804" elapsed="0.000295"/>
+</kw>
+<kw name="Write Project File" owner="BackendAnalyzerLibrary">
+<arg>${project}</arg>
+<arg>schema.py</arg>
+<arg>import strawberry\n\n@strawberry.input\nclass BuyersDelete:\n</arg>
+<arg>id: str\n\n@strawberry.type\nclass Mutation:\n</arg>
+<arg>@strawberry.mutation\n</arg>
+<arg>def delete_buyer(self, buyer: BuyersDelete) -&gt; str:\n</arg>
+<arg>return "ok"</arg>
+<status status="PASS" start="2026-04-23T18:27:10.323223" elapsed="0.000376"/>
+</kw>
+<kw name="Discover Backend" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.324267" level="INFO">${discovery} = BackendDiscovery(runtime='Python', api_style='Unknown', database_type='Unknown', frameworks=[], endpoints=[])</msg>
+<var>${discovery}</var>
+<arg>${project}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.323745" elapsed="0.000557"/>
+</kw>
+<kw name="Should Be Equal" owner="BuiltIn">
+<arg>${discovery.runtime}</arg>
+<arg>Python</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.324444" elapsed="0.000678"/>
+</kw>
+<kw name="Cleanup Sample Project" owner="BackendAnalyzerLibrary" type="TEARDOWN">
+<status status="PASS" start="2026-04-23T18:27:10.325337" elapsed="0.000228"/>
+</kw>
+<doc>Checks that custom GraphQL input types are treated as required.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.321890" elapsed="0.003749"/>
+</test>
+<test id="s1-s1-t23" name="Find Django routes" line="201">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.326509" level="INFO">Running Django discovery case.</msg>
+<arg>Running Django discovery case.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.326249" elapsed="0.000317"/>
+</kw>
+<kw name="Create Temp Project" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.326946" level="INFO">${project} = /tmp/tmp22qeew5a</msg>
+<var>${project}</var>
+<status status="PASS" start="2026-04-23T18:27:10.326693" elapsed="0.000285"/>
+</kw>
+<kw name="Write Project File" owner="BackendAnalyzerLibrary">
+<arg>${project}</arg>
+<arg>views.py</arg>
+<arg>from django.http import JsonResponse\n\ndef get_user(request):\n</arg>
+<arg>return JsonResponse({\"ok\": True})</arg>
+<status status="PASS" start="2026-04-23T18:27:10.327101" elapsed="0.000345"/>
+</kw>
+<kw name="Discover Backend" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.328093" level="INFO">${discovery} = BackendDiscovery(runtime='Python', api_style='Unknown', database_type='Unknown', frameworks=[], endpoints=[])</msg>
+<var>${discovery}</var>
+<arg>${project}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.327582" elapsed="0.000544"/>
+</kw>
+<kw name="Should Be Equal" owner="BuiltIn">
+<arg>${discovery.runtime}</arg>
+<arg>Python</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.328263" elapsed="0.000641"/>
+</kw>
+<kw name="Cleanup Sample Project" owner="BackendAnalyzerLibrary" type="TEARDOWN">
+<status status="PASS" start="2026-04-23T18:27:10.329110" elapsed="0.000198"/>
+</kw>
+<doc>Checks that Django routes are discovered.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.325897" elapsed="0.003480"/>
+</test>
+<test id="s1-s1-t24" name="Find DRF router and serializer example" line="209">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.330270" level="INFO">Running DRF discovery case.</msg>
+<arg>Running DRF discovery case.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.330029" elapsed="0.000296"/>
+</kw>
+<kw name="Create Temp Project" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.330955" level="INFO">${project} = /tmp/tmpstqaycnn</msg>
+<var>${project}</var>
+<status status="PASS" start="2026-04-23T18:27:10.330458" elapsed="0.000529"/>
+</kw>
+<kw name="Write Project File" owner="BackendAnalyzerLibrary">
+<arg>${project}</arg>
+<arg>api.py</arg>
+<arg>from rest_framework import serializers, viewsets\n\nclass UserSerializer(serializers.Serializer):\n</arg>
+<arg>id = serializers.CharField()\n\nclass UserViewSet(viewsets.ViewSet):\n</arg>
+<arg>pass</arg>
+<status status="PASS" start="2026-04-23T18:27:10.331111" elapsed="0.000344"/>
+</kw>
+<kw name="Discover Backend" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.332092" level="INFO">${discovery} = BackendDiscovery(runtime='Python', api_style='Unknown', database_type='Unknown', frameworks=[], endpoints=[])</msg>
+<var>${discovery}</var>
+<arg>${project}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.331593" elapsed="0.000531"/>
+</kw>
+<kw name="Should Be Equal" owner="BuiltIn">
+<arg>${discovery.runtime}</arg>
+<arg>Python</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.332259" elapsed="0.000605"/>
+</kw>
+<kw name="Cleanup Sample Project" owner="BackendAnalyzerLibrary" type="TEARDOWN">
+<status status="PASS" start="2026-04-23T18:27:10.333114" elapsed="0.000270"/>
+</kw>
+<doc>Checks that DRF router endpoints and serializers are discovered.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.329612" elapsed="0.003863"/>
+</test>
+<test id="s1-s1-t25" name="Find Quarkus JAX-RS endpoints" line="217">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.334330" level="INFO">Running Quarkus JAX-RS case.</msg>
+<arg>Running Quarkus JAX-RS case.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.334108" elapsed="0.000271"/>
+</kw>
+<kw name="Create Temp Project" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.334747" level="INFO">${project} = /tmp/tmp56zoa3bi</msg>
+<var>${project}</var>
+<status status="PASS" start="2026-04-23T18:27:10.334510" elapsed="0.000266"/>
+</kw>
+<kw name="Write Project File" owner="BackendAnalyzerLibrary">
+<arg>${project}</arg>
+<arg>UserResource.java</arg>
+<arg>package demo;\n\nimport jakarta.ws.rs.GET;\nimport jakarta.ws.rs.Path;\n\n@Path("/users")\npublic class UserResource {\n</arg>
+<arg>@GET\n</arg>
+<arg>public String listUsers() {\n</arg>
+<arg>return "ok";\n</arg>
+<arg>}\n}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.334918" elapsed="0.000331"/>
+</kw>
+<kw name="Discover Backend" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.336074" level="INFO">${discovery} = BackendDiscovery(runtime='Java', api_style='REST', database_type='Unknown', frameworks=['JAX-RS'], endpoints=[DiscoveredEndpoint(name='listUsers', kind='rest', method='GET', path='/users', source_file...</msg>
+<var>${discovery}</var>
+<arg>${project}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.335387" elapsed="0.000719"/>
+</kw>
+<kw name="Get Endpoint Paths" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.336438" level="INFO">${paths} = ['GET /users']</msg>
+<var>${paths}</var>
+<arg>${discovery}</arg>
+<arg>rest</arg>
+<status status="PASS" start="2026-04-23T18:27:10.336244" elapsed="0.000224"/>
+</kw>
+<kw name="Should Contain" owner="BuiltIn">
+<arg>${paths}</arg>
+<arg>GET /users</arg>
+<doc>Fails if ``container`` does not contain ``item`` one or more times.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.336609" elapsed="0.000394"/>
+</kw>
+<kw name="Cleanup Sample Project" owner="BackendAnalyzerLibrary" type="TEARDOWN">
+<status status="PASS" start="2026-04-23T18:27:10.337244" elapsed="0.000241"/>
+</kw>
+<doc>Checks that Quarkus JAX-RS endpoints are discovered.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.333730" elapsed="0.003831"/>
+</test>
+<test id="s1-s1-t26" name="Find Quarkus root paths for REST and GraphQL" line="226">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.338336" level="INFO">Running Quarkus root path case.</msg>
+<arg>Running Quarkus root path case.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.338069" elapsed="0.000309"/>
+</kw>
+<kw name="Create Temp Project" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.338738" level="INFO">${project} = /tmp/tmpdr5b91id</msg>
+<var>${project}</var>
+<status status="PASS" start="2026-04-23T18:27:10.338521" elapsed="0.000239"/>
+</kw>
+<kw name="Write Project File" owner="BackendAnalyzerLibrary">
+<arg>${project}</arg>
+<arg>App.java</arg>
+<arg>package demo;\n\nimport jakarta.ws.rs.GET;\nimport jakarta.ws.rs.Path;\n\n@Path("/")\npublic class App {\n</arg>
+<arg>@GET\n</arg>
+<arg>public String health() {\n</arg>
+<arg>return "ok";\n</arg>
+<arg>}\n}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.338860" elapsed="0.000287"/>
+</kw>
+<kw name="Discover Backend" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.339632" level="INFO">${discovery} = BackendDiscovery(runtime='Java', api_style='REST', database_type='Unknown', frameworks=['JAX-RS'], endpoints=[DiscoveredEndpoint(name='health', kind='rest', method='GET', path='/', source_file='App.ja...</msg>
+<var>${discovery}</var>
+<arg>${project}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.339249" elapsed="0.000408"/>
+</kw>
+<kw name="Should Be Equal" owner="BuiltIn">
+<arg>${discovery.runtime}</arg>
+<arg>Java</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.339771" elapsed="0.000566"/>
+</kw>
+<kw name="Cleanup Sample Project" owner="BackendAnalyzerLibrary" type="TEARDOWN">
+<status status="PASS" start="2026-04-23T18:27:10.340509" elapsed="0.000199"/>
+</kw>
+<doc>Checks that Quarkus root paths are discovered as backend endpoints.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.337745" elapsed="0.003014"/>
+</test>
+<test id="s1-s1-t27" name="Find Spring request body without path variables" line="234">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.341453" level="INFO">Running Spring request body case.</msg>
+<arg>Running Spring request body case.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.341251" elapsed="0.000242"/>
+</kw>
+<kw name="Create Temp Project" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.341789" level="INFO">${project} = /tmp/tmp96grvmcy</msg>
+<var>${project}</var>
+<status status="PASS" start="2026-04-23T18:27:10.341591" elapsed="0.000219"/>
+</kw>
+<kw name="Write Project File" owner="BackendAnalyzerLibrary">
+<arg>${project}</arg>
+<arg>UserController.java</arg>
+<arg>package demo;\n\nimport org.springframework.web.bind.annotation.PostMapping;\nimport org.springframework.web.bind.annotation.RequestBody;\nimport org.springframework.web.bind.annotation.RestController;\n\n@RestController\nclass UserController {\n</arg>
+<arg>@PostMapping("/users")\n</arg>
+<arg>public String createUser(@RequestBody UserRequest request) {\n</arg>
+<arg>return "ok";\n</arg>
+<arg>}\n}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.341909" elapsed="0.000326"/>
+</kw>
+<kw name="Discover Backend" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.342854" level="INFO">${discovery} = BackendDiscovery(runtime='Java', api_style='REST', database_type='Unknown', frameworks=['Spring Web'], endpoints=[DiscoveredEndpoint(name='createUser', kind='rest', method='POST', path='/users', sourc...</msg>
+<var>${discovery}</var>
+<arg>${project}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.342372" elapsed="0.000508"/>
+</kw>
+<kw name="Get First Endpoint" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.343124" level="INFO">${endpoint} = DiscoveredEndpoint(name='createUser', kind='rest', method='POST', path='/users', source_file='UserController.java', line=10, example_json_body={'request': ''}, graphql_query='', graphql_variables={}, ...</msg>
+<var>${endpoint}</var>
+<arg>${discovery}</arg>
+<arg>rest</arg>
+<status status="PASS" start="2026-04-23T18:27:10.342980" elapsed="0.000167"/>
+</kw>
+<kw name="Should Be Equal" owner="BuiltIn">
+<arg>${discovery.runtime}</arg>
+<arg>Java</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.343245" elapsed="0.000451"/>
+</kw>
+<kw name="Cleanup Sample Project" owner="BackendAnalyzerLibrary" type="TEARDOWN">
+<status status="PASS" start="2026-04-23T18:27:10.343852" elapsed="0.000162"/>
+</kw>
+<doc>Checks that Spring request bodies are discovered without path noise.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.340929" elapsed="0.003138"/>
+</test>
+<test id="s1-s1-t28" name="Find Quarkus request body without path param noise" line="243">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.344683" level="INFO">Running Quarkus request body case.</msg>
+<arg>Running Quarkus request body case.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.344515" elapsed="0.000207"/>
+</kw>
+<kw name="Create Temp Project" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.345053" level="INFO">${project} = /tmp/tmpmzlc_ecj</msg>
+<var>${project}</var>
+<status status="PASS" start="2026-04-23T18:27:10.344813" elapsed="0.000262"/>
+</kw>
+<kw name="Write Project File" owner="BackendAnalyzerLibrary">
+<arg>${project}</arg>
+<arg>UserResource.java</arg>
+<arg>package demo;\n\nimport jakarta.ws.rs.POST;\nimport jakarta.ws.rs.Path;\nimport jakarta.ws.rs.PathParam;\n\n@Path("/users")\npublic class UserResource {\n</arg>
+<arg>@POST\n</arg>
+<arg>public String createUser(UserRequest request, @PathParam("id") String id) {\n</arg>
+<arg>return "ok";\n</arg>
+<arg>}\n}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.345212" elapsed="0.000326"/>
+</kw>
+<kw name="Discover Backend" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.346315" level="INFO">${discovery} = BackendDiscovery(runtime='Java', api_style='REST', database_type='Unknown', frameworks=['JAX-RS'], endpoints=[DiscoveredEndpoint(name='createUser', kind='rest', method='POST', path='/users', source_fi...</msg>
+<var>${discovery}</var>
+<arg>${project}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.345679" elapsed="0.000670"/>
+</kw>
+<kw name="Should Be Equal" owner="BuiltIn">
+<arg>${discovery.runtime}</arg>
+<arg>Java</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.346482" elapsed="0.000651"/>
+</kw>
+<kw name="Cleanup Sample Project" owner="BackendAnalyzerLibrary" type="TEARDOWN">
+<status status="PASS" start="2026-04-23T18:27:10.347332" elapsed="0.000224"/>
+</kw>
+<doc>Checks that Quarkus request bodies are discovered without path noise.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.344220" elapsed="0.003462"/>
+</test>
+<test id="s1-s1-t29" name="Find Java GraphQL mutation with argument types and placeholder selection" line="251">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.348862" level="INFO">Running Java GraphQL mutation case.</msg>
+<arg>Running Java GraphQL mutation case.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.348384" elapsed="0.000535"/>
+</kw>
+<kw name="Create Temp Project" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.349316" level="INFO">${project} = /tmp/tmpjax94qqt</msg>
+<var>${project}</var>
+<status status="PASS" start="2026-04-23T18:27:10.349057" elapsed="0.000290"/>
+</kw>
+<kw name="Write Project File" owner="BackendAnalyzerLibrary">
+<arg>${project}</arg>
+<arg>GraphqlController.java</arg>
+<arg>package demo;\n\nimport org.springframework.graphql.data.method.annotation.Argument;\nimport org.springframework.graphql.data.method.annotation.MutationMapping;\nimport org.springframework.stereotype.Controller;\n\nclass AuditInfo {\n</arg>
+<arg>private String updatedBy;\n}\n\nclass UserProfile {\n</arg>
+<arg>private String id;\n</arg>
+<arg>private AuditInfo audit;\n}\n\n@Controller\npublic class GraphqlController {\n</arg>
+<arg>@MutationMapping\n</arg>
+<arg>public UserProfile updateUser(@Argument String id) {\n</arg>
+<arg>return new UserProfile();\n</arg>
+<arg>}\n}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.349474" elapsed="0.000409"/>
+</kw>
+<kw name="Discover Backend" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.350754" level="INFO">${discovery} = BackendDiscovery(runtime='Java', api_style='GraphQL', database_type='Unknown', frameworks=['Spring GraphQL'], endpoints=[DiscoveredEndpoint(name='updateUser', kind='graphql', method='POST', path='/gra...</msg>
+<var>${discovery}</var>
+<arg>${project}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.350029" elapsed="0.000760"/>
+</kw>
+<kw name="Should Be Equal" owner="BuiltIn">
+<arg>${discovery.runtime}</arg>
+<arg>Java</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.350933" elapsed="0.000806"/>
+</kw>
+<kw name="Cleanup Sample Project" owner="BackendAnalyzerLibrary" type="TEARDOWN">
+<status status="PASS" start="2026-04-23T18:27:10.352004" elapsed="0.000281"/>
+</kw>
+<doc>Checks that Java GraphQL mutations include arguments and placeholders.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.347999" elapsed="0.004384"/>
+</test>
+<status status="PASS" start="2026-04-23T18:27:10.202329" elapsed="0.150674"/>
+</suite>
+<suite id="s1-s2" name="Engine Tests" source="/home/user/Desktop/Backend Analyzer/robot_tests/engine_tests.robot">
+<test id="s1-s2-t1" name="Analyze path and get backend discovery" line="5">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.356037" level="INFO">Running engine discovery case.</msg>
+<arg>Running engine discovery case.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.355780" elapsed="0.000313"/>
+</kw>
+<kw name="Create Temp Project" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.356517" level="INFO">${project} = /tmp/tmpqfej9qm5</msg>
+<var>${project}</var>
+<status status="PASS" start="2026-04-23T18:27:10.356239" elapsed="0.000310"/>
+</kw>
+<kw name="Write Project File" owner="BackendAnalyzerLibrary">
+<arg>${project}</arg>
+<arg>app.py</arg>
+<arg>print("hello")</arg>
+<status status="PASS" start="2026-04-23T18:27:10.356684" elapsed="0.000355"/>
+</kw>
+<kw name="Discover Backend" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.357703" level="INFO">${discovery} = BackendDiscovery(runtime='Python', api_style='Unknown', database_type='Unknown', frameworks=[], endpoints=[])</msg>
+<var>${discovery}</var>
+<arg>${project}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.357176" elapsed="0.000559"/>
+</kw>
+<kw name="Should Be Equal" owner="BuiltIn">
+<arg>${discovery.runtime}</arg>
+<arg>Python</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.357889" elapsed="0.000614"/>
+</kw>
+<doc>Checks that analysis can inspect a valid path and discover backend metadata.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.355279" elapsed="0.003394"/>
+</test>
+<test id="s1-s2-t2" name="Return none for invalid path" line="13">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.359679" level="INFO">Running invalid path case.</msg>
+<arg>Running invalid path case.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.359454" elapsed="0.000275"/>
+</kw>
+<kw name="Evaluate" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.363772" level="INFO">Sorry, /does/not/exist is not real file or folder</msg>
+<msg time="2026-04-23T18:27:10.363929" level="INFO">${result} = None</msg>
+<var>${result}</var>
+<arg>__import__("analyzer.engine", fromlist=["AnalysisEngine"]).AnalysisEngine().analyze_path("/does/not/exist")</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.359877" elapsed="0.004093"/>
+</kw>
+<kw name="Should Be Equal" owner="BuiltIn">
+<arg>${result}</arg>
+<arg>${None}</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.364145" elapsed="0.000384"/>
+</kw>
+<doc>Checks that an invalid path returns no report instead of crashing.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.359061" elapsed="0.005629"/>
+</test>
+<test id="s1-s2-t3" name="Report shows issue breakdown" line="19">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.365422" level="INFO">Running report breakdown case.</msg>
+<arg>Running report breakdown case.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.365230" elapsed="0.000231"/>
+</kw>
+<kw name="Evaluate" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.366055" level="INFO">${result} = {'health_score': {'overall': 98.8, 'security': 100, 'performance': 100, 'design': 100, 'reliability': 92}, 'summary': {'total_issues': 1, 'critical': 0, 'warnings': 1, 'info': 0}, 'functional_summary'...</msg>
+<var>${result}</var>
+<arg>__import__("analyzer.report", fromlist=["AnalysisReport"]).AnalysisReport([__import__("analyzer.issue", fromlist=["Issue","IssueLocation","IssueSeverity","IssueType"]).Issue(detector_name="demo", issue_type=__import__("analyzer.issue", fromlist=["IssueType"]).IssueType.RELIABILITY, severity=__import__("analyzer.issue", fromlist=["IssueSeverity"]).IssueSeverity.MEDIUM, title="missing validation", description="demo", location=__import__("analyzer.issue", fromlist=["IssueLocation"]).IssueLocation("app.py", 10))]).to_dict()</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.365588" elapsed="0.000492"/>
+</kw>
+<kw name="Should Be Equal As Integers" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.366802" level="INFO">Argument types are:
+&lt;class 'int'&gt;
+&lt;class 'str'&gt;</msg>
+<arg>${result["summary"]["total_issues"]}</arg>
+<arg>1</arg>
+<doc>Fails if objects are unequal after converting them to integers.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.366254" elapsed="0.000613"/>
+</kw>
+<kw name="Should Be Equal As Integers" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.367379" level="INFO">Argument types are:
+&lt;class 'int'&gt;
+&lt;class 'str'&gt;</msg>
+<arg>${result["summary"]["warnings"]}</arg>
+<arg>1</arg>
+<doc>Fails if objects are unequal after converting them to integers.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.366979" elapsed="0.000452"/>
+</kw>
+<doc>Checks that the report dictionary includes the expected issue summary fields.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.364844" elapsed="0.002695"/>
+</test>
+<test id="s1-s2-t4" name="Report health score goes down when issues exist" line="26">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.368512" level="INFO">Running health score case.</msg>
+<arg>Running health score case.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.368251" elapsed="0.000302"/>
+</kw>
+<kw name="Evaluate" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.369307" level="INFO">${result} = {'overall': 93.8, 'security': 85, 'performance': 97, 'design': 100, 'reliability': 100}</msg>
+<var>${result}</var>
+<arg>__import__("analyzer.report", fromlist=["AnalysisReport"]).AnalysisReport([__import__("analyzer.issue", fromlist=["Issue","IssueLocation","IssueSeverity","IssueType"]).Issue(detector_name="demo", issue_type=__import__("analyzer.issue", fromlist=["IssueType"]).IssueType.SECURITY, severity=__import__("analyzer.issue", fromlist=["IssueSeverity"]).IssueSeverity.HIGH, title="security issue", description="demo", location=__import__("analyzer.issue", fromlist=["IssueLocation"]).IssueLocation("app.py", 1)), __import__("analyzer.issue", fromlist=["Issue","IssueLocation","IssueSeverity","IssueType"]).Issue(detector_name="demo", issue_type=__import__("analyzer.issue", fromlist=["IssueType"]).IssueType.PERFORMANCE, severity=__import__("analyzer.issue", fromlist=["IssueSeverity"]).IssueSeverity.LOW, title="slow issue", description="demo", location=__import__("analyzer.issue", fromlist=["IssueLocation"]).IssueLocation("app.py", 2))]).health_score.to_dict()</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.368751" elapsed="0.000597"/>
+</kw>
+<kw name="Should Be True" owner="BuiltIn">
+<arg>${result["overall"]} &lt; 100</arg>
+<doc>Fails if the given condition is not true.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.369506" elapsed="0.000604"/>
+</kw>
+<kw name="Should Be True" owner="BuiltIn">
+<arg>${result["security"]} &lt; 100</arg>
+<doc>Fails if the given condition is not true.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.370224" elapsed="0.000435"/>
+</kw>
+<kw name="Should Be True" owner="BuiltIn">
+<arg>${result["performance"]} &lt; 100</arg>
+<doc>Fails if the given condition is not true.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.370759" elapsed="0.000416"/>
+</kw>
+<doc>Checks that the health score decreases when security and performance issues exist.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.367694" elapsed="0.003675"/>
+</test>
+<status status="PASS" start="2026-04-23T18:27:10.353626" elapsed="0.018014"/>
+</suite>
+<suite id="s1-s3" name="Functional Tests" source="/home/user/Desktop/Backend Analyzer/robot_tests/functional_tests.robot">
+<kw name="Start Functional Server" owner="BackendAnalyzerLibrary" type="SETUP">
+<msg time="2026-04-23T18:27:10.375988" level="INFO">${BASE_URL} = http://127.0.0.1:43137</msg>
+<status status="PASS" start="2026-04-23T18:27:10.373155" elapsed="0.002911"/>
+</kw>
+<test id="s1-s3-t1" name="Passes healthy REST endpoint" line="7">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.376816" level="INFO">Running healthy REST functional case.</msg>
+<arg>Running healthy REST functional case.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.376550" elapsed="0.000334"/>
+</kw>
+<kw name="Evaluate" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.377476" level="INFO">${tests} = [{'name': 'health ok', 'kind': 'rest', 'url': 'http://127.0.0.1:43137/health', 'expect': {'status': 200, 'json_paths': {'status': 'not_null', 'error': 'null'}}}]</msg>
+<var>${tests}</var>
+<arg>[{"name": "health ok", "kind": "rest", "url": "${BASE_URL}/health", "expect": {"status": 200, "json_paths": {"status": "not_null", "error": "null"}}}]</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.377030" elapsed="0.000476"/>
+</kw>
+<kw name="Run Functional Tests" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.418064" level="INFO">Running 1 functional API tests from Functional Test Builder
+  Functional test: health ok</msg>
+<msg time="2026-04-23T18:27:10.418248" level="INFO">${summary} = FunctionalTestSummary(config_path='Functional Test Builder', results=[FunctionalTestResult(name='health ok', endpoint='http://127.0.0.1:43137/health', passed=True, status_code=200, response_time_ms=39...</msg>
+<var>${summary}</var>
+<arg>${tests}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.377646" elapsed="0.040637"/>
+</kw>
+<kw name="Should Be Equal As Integers" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.419117" level="INFO">Argument types are:
+&lt;class 'int'&gt;
+&lt;class 'str'&gt;</msg>
+<arg>${summary.failed}</arg>
+<arg>0</arg>
+<doc>Fails if objects are unequal after converting them to integers.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.418525" elapsed="0.000648"/>
+</kw>
+<kw name="Should Be Equal As Integers" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.419766" level="INFO">Argument types are:
+&lt;class 'int'&gt;
+&lt;class 'str'&gt;</msg>
+<arg>${summary.passed}</arg>
+<arg>1</arg>
+<doc>Fails if objects are unequal after converting them to integers.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.419344" elapsed="0.000470"/>
+</kw>
+<doc>Checks that a healthy REST endpoint passes validation.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.376136" elapsed="0.043900"/>
+</test>
+<test id="s1-s3-t2" name="Fails broken REST endpoint" line="15">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.420985" level="INFO">Running broken REST functional case.</msg>
+<arg>Running broken REST functional case.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.420532" elapsed="0.000496"/>
+</kw>
+<kw name="Evaluate" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.421684" level="INFO">${tests} = [{'name': 'broken rest response', 'kind': 'rest', 'url': 'http://127.0.0.1:43137/broken', 'expect': {'status': 200, 'json_paths': {'data': 'not_null', 'error': 'null'}}}]</msg>
+<var>${tests}</var>
+<arg>[{"name": "broken rest response", "kind": "rest", "url": "${BASE_URL}/broken", "expect": {"status": 200, "json_paths": {"data": "not_null", "error": "null"}}}]</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.421216" elapsed="0.000491"/>
+</kw>
+<kw name="Run Functional Tests" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.423120" level="INFO">Running 1 functional API tests from Functional Test Builder
+  Functional test: broken rest response</msg>
+<msg time="2026-04-23T18:27:10.423223" level="INFO">${summary} = FunctionalTestSummary(config_path='Functional Test Builder', results=[FunctionalTestResult(name='broken rest response', endpoint='http://127.0.0.1:43137/broken', passed=False, status_code=200, respons...</msg>
+<var>${summary}</var>
+<arg>${tests}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.421805" elapsed="0.001458"/>
+</kw>
+<kw name="Should Be Equal As Integers" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.424018" level="INFO">Argument types are:
+&lt;class 'int'&gt;
+&lt;class 'str'&gt;</msg>
+<arg>${summary.failed}</arg>
+<arg>1</arg>
+<doc>Fails if objects are unequal after converting them to integers.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.423496" elapsed="0.000572"/>
+</kw>
+<doc>Checks that a broken REST endpoint is marked as failed.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.420245" elapsed="0.003956"/>
+</test>
+<test id="s1-s3-t3" name="Passes healthy GraphQL query" line="22">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.424774" level="INFO">Running healthy GraphQL functional case.</msg>
+<arg>Running healthy GraphQL functional case.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.424611" elapsed="0.000200"/>
+</kw>
+<kw name="Evaluate" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.425394" level="INFO">${tests} = [{'name': 'graphql data present', 'kind': 'graphql', 'url': 'http://127.0.0.1:43137/graphql', 'query': 'query($id: ID!) { user(id: $id) { id name } }', 'variables': {'id': '1'}, 'expect': {'status': 2...</msg>
+<var>${tests}</var>
+<arg>[{"name": "graphql data present", "kind": "graphql", "url": "${BASE_URL}/graphql", "query": "query($id: ID!) { user(id: $id) { id name } }", "variables": {"id": "1"}, "expect": {"status": 200, "data_not_null": True, "no_errors": True, "json_paths": {"data.user.name": "Ada"}}}]</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.424957" elapsed="0.000486"/>
+</kw>
+<kw name="Run Functional Tests" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.426842" level="INFO">Running 1 functional API tests from Functional Test Builder
+  Functional test: graphql data present</msg>
+<msg time="2026-04-23T18:27:10.426961" level="INFO">${summary} = FunctionalTestSummary(config_path='Functional Test Builder', results=[FunctionalTestResult(name='graphql data present', endpoint='http://127.0.0.1:43137/graphql', passed=True, status_code=200, respons...</msg>
+<var>${summary}</var>
+<arg>${tests}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.425573" elapsed="0.001419"/>
+</kw>
+<kw name="Should Be Equal As Integers" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.427737" level="INFO">Argument types are:
+&lt;class 'int'&gt;
+&lt;class 'str'&gt;</msg>
+<arg>${summary.failed}</arg>
+<arg>0</arg>
+<doc>Fails if objects are unequal after converting them to integers.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.427143" elapsed="0.000661"/>
+</kw>
+<kw name="Should Be Equal As Integers" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.428520" level="INFO">Argument types are:
+&lt;class 'int'&gt;
+&lt;class 'str'&gt;</msg>
+<arg>${summary.passed}</arg>
+<arg>1</arg>
+<doc>Fails if objects are unequal after converting them to integers.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.427970" elapsed="0.000617"/>
+</kw>
+<doc>Checks that a healthy GraphQL query passes validation.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.424359" elapsed="0.004923"/>
+</test>
+<test id="s1-s3-t4" name="Fails broken GraphQL query" line="30">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.430751" level="INFO">Running broken GraphQL functional case.</msg>
+<arg>Running broken GraphQL functional case.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.430515" elapsed="0.000287"/>
+</kw>
+<kw name="Evaluate" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.431576" level="INFO">${tests} = [{'name': 'broken graphql response', 'kind': 'graphql', 'url': 'http://127.0.0.1:43137/graphql', 'query': 'query($id: ID!) { user(id: $id) { id name } }', 'variables': {'id': 'broken'}, 'expect': {'st...</msg>
+<var>${tests}</var>
+<arg>[{"name": "broken graphql response", "kind": "graphql", "url": "${BASE_URL}/graphql", "query": "query($id: ID!) { user(id: $id) { id name } }", "variables": {"id": "broken"}, "expect": {"status": 200, "data_not_null": True, "no_errors": True}}]</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.431044" elapsed="0.000566"/>
+</kw>
+<kw name="Run Functional Tests" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.433148" level="INFO">Running 1 functional API tests from Functional Test Builder
+  Functional test: broken graphql response</msg>
+<msg time="2026-04-23T18:27:10.433261" level="INFO">${summary} = FunctionalTestSummary(config_path='Functional Test Builder', results=[FunctionalTestResult(name='broken graphql response', endpoint='http://127.0.0.1:43137/graphql', passed=False, status_code=200, res...</msg>
+<var>${summary}</var>
+<arg>${tests}</arg>
+<status status="PASS" start="2026-04-23T18:27:10.431849" elapsed="0.001444"/>
+</kw>
+<kw name="Should Be Equal As Integers" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.434168" level="INFO">Argument types are:
+&lt;class 'int'&gt;
+&lt;class 'str'&gt;</msg>
+<arg>${summary.failed}</arg>
+<arg>1</arg>
+<doc>Fails if objects are unequal after converting them to integers.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.433599" elapsed="0.000637"/>
+</kw>
+<doc>Checks that a broken GraphQL query is marked as failed.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.430039" elapsed="0.004938"/>
+</test>
+<kw name="Stop Functional Server" owner="BackendAnalyzerLibrary" type="TEARDOWN">
+<status status="PASS" start="2026-04-23T18:27:10.435701" elapsed="0.497800"/>
+</kw>
+<status status="PASS" start="2026-04-23T18:27:10.371934" elapsed="0.561731"/>
+</suite>
+<suite id="s1-s4" name="Java Detectors" source="/home/user/Desktop/Backend Analyzer/robot_tests/java_detectors.robot">
+<test id="s1-s4-t1" name="Find Spring controller validation and swallowed errors" line="5">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.942942" level="INFO">Running Spring controller detector case.</msg>
+<arg>Running Spring controller detector case.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.942003" elapsed="0.001248"/>
+</kw>
+<kw name="Catenate" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.945869" level="INFO">${code} = package demo;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+@Re...</msg>
+<var>${code}</var>
+<arg>SEPARATOR=\n</arg>
+<arg>package demo;</arg>
+<arg>import org.springframework.web.bind.annotation.PostMapping;</arg>
+<arg>import org.springframework.web.bind.annotation.RequestBody;</arg>
+<arg>import org.springframework.web.bind.annotation.RestController;</arg>
+<arg>@RestController</arg>
+<arg>public class UserController {</arg>
+<arg>@PostMapping("/users")</arg>
+<arg>public String createUser(@RequestBody UserRequest request) {</arg>
+<arg>try {</arg>
+<arg>return service.create(request);</arg>
+<arg>} catch (Exception ex) {</arg>
+<arg>}</arg>
+<arg>}</arg>
+<arg>}</arg>
+<doc>Catenates the given items together and returns the resulted string.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.943934" elapsed="0.002100"/>
+</kw>
+<kw name="Analyze Java Code" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.960218" level="INFO">${issues} = [Issue(detector_name='java_backend_review', issue_type=&lt;IssueType.RELIABILITY: 'reliability'&gt;, severity=&lt;IssueSeverity.MEDIUM: 'medium'&gt;, title='Java API handler createUser() accepts input without obv...</msg>
+<var>${issues}</var>
+<arg>${code}</arg>
+<arg>UserController.java</arg>
+<status status="PASS" start="2026-04-23T18:27:10.946811" elapsed="0.013541"/>
+</kw>
+<kw name="Issue Titles Should Contain" owner="BackendAnalyzerLibrary">
+<arg>${issues}</arg>
+<arg>accepts input without obvious validation</arg>
+<status status="PASS" start="2026-04-23T18:27:10.960839" elapsed="0.000442"/>
+</kw>
+<kw name="Issue Titles Should Contain" owner="BackendAnalyzerLibrary">
+<arg>${issues}</arg>
+<arg>swallows exceptions</arg>
+<status status="PASS" start="2026-04-23T18:27:10.961703" elapsed="0.000421"/>
+</kw>
+<doc>Checks that Spring controller validation gaps and swallowed exceptions are detected.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.940335" elapsed="0.022131"/>
+</test>
+<test id="s1-s4-t2" name="Find Quarkus N plus one pattern" line="13">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.964629" level="INFO">Running Quarkus N+1 detector case.</msg>
+<arg>Running Quarkus N+1 detector case.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.964026" elapsed="0.000731"/>
+</kw>
+<kw name="Catenate" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.966012" level="INFO">${code} = package demo;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+@Path("/users")
+public class UserResource {
+@GET
+public String listUsers() {
+for (User user : userRepository.findAll()) {
+orderReposi...</msg>
+<var>${code}</var>
+<arg>SEPARATOR=\n</arg>
+<arg>package demo;</arg>
+<arg>import jakarta.ws.rs.GET;</arg>
+<arg>import jakarta.ws.rs.Path;</arg>
+<arg>@Path("/users")</arg>
+<arg>public class UserResource {</arg>
+<arg>@GET</arg>
+<arg>public String listUsers() {</arg>
+<arg>for (User user : userRepository.findAll()) {</arg>
+<arg>orderRepository.findByUserId(user.id);</arg>
+<arg>}</arg>
+<arg>return "ok";</arg>
+<arg>}</arg>
+<arg>}</arg>
+<doc>Catenates the given items together and returns the resulted string.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.965084" elapsed="0.000991"/>
+</kw>
+<kw name="Analyze Java Code" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.969192" level="INFO">${issues} = [Issue(detector_name='java_backend_review', issue_type=&lt;IssueType.PERFORMANCE: 'performance'&gt;, severity=&lt;IssueSeverity.MEDIUM: 'medium'&gt;, title='Possible N+1 database access in listUsers()', descripti...</msg>
+<var>${issues}</var>
+<arg>${code}</arg>
+<arg>UserResource.java</arg>
+<status status="PASS" start="2026-04-23T18:27:10.966403" elapsed="0.002861"/>
+</kw>
+<kw name="Issue Titles Should Contain" owner="BackendAnalyzerLibrary">
+<arg>${issues}</arg>
+<arg>N+1 database access</arg>
+<status status="PASS" start="2026-04-23T18:27:10.969538" elapsed="0.000336"/>
+</kw>
+<doc>Checks that a Quarkus loop with repeated data access is reported as an N+1 risk.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.962991" elapsed="0.007133"/>
+</test>
+<test id="s1-s4-t3" name="Find Java GraphQL query concatenation" line="20">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.971563" level="INFO">Running Java GraphQL injection detector case.</msg>
+<arg>Running Java GraphQL injection detector case.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.971162" elapsed="0.000486"/>
+</kw>
+<kw name="Catenate" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.972484" level="INFO">${code} = package demo;
+import org.springframework.graphql.data.method.annotation.QueryMapping;
+import org.springframework.stereotype.Controller;
+@Controller
+public class SalaryGraphqlController {
+@QueryMapping...</msg>
+<var>${code}</var>
+<arg>SEPARATOR=\n</arg>
+<arg>package demo;</arg>
+<arg>import org.springframework.graphql.data.method.annotation.QueryMapping;</arg>
+<arg>import org.springframework.stereotype.Controller;</arg>
+<arg>@Controller</arg>
+<arg>public class SalaryGraphqlController {</arg>
+<arg>@QueryMapping</arg>
+<arg>public String calculateSalary(String employeeId) {</arg>
+<arg>String query = "SELECT * FROM salary WHERE employee_id = '" + employeeId + "'";</arg>
+<arg>return entityManager.createNativeQuery(query).getSingleResult().toString();</arg>
+<arg>}</arg>
+<arg>}</arg>
+<doc>Catenates the given items together and returns the resulted string.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.971870" elapsed="0.000665"/>
+</kw>
+<kw name="Analyze Java Code" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.975087" level="INFO">${issues} = [Issue(detector_name='java_backend_review', issue_type=&lt;IssueType.SECURITY: 'security'&gt;, severity=&lt;IssueSeverity.HIGH: 'high'&gt;, title='Query string concatenation in calculateSalary()', description='SQ...</msg>
+<var>${issues}</var>
+<arg>${code}</arg>
+<arg>SalaryGraphqlController.java</arg>
+<status status="PASS" start="2026-04-23T18:27:10.972789" elapsed="0.002358"/>
+</kw>
+<kw name="Issue Titles Should Contain" owner="BackendAnalyzerLibrary">
+<arg>${issues}</arg>
+<arg>Query string concatenation</arg>
+<status status="PASS" start="2026-04-23T18:27:10.975362" elapsed="0.000271"/>
+</kw>
+<doc>Checks that string concatenation inside a GraphQL query is flagged.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.970493" elapsed="0.005338"/>
+</test>
+<status status="PASS" start="2026-04-23T18:27:10.935367" elapsed="0.040859"/>
+</suite>
+<suite id="s1-s5" name="Python Detectors" source="/home/user/Desktop/Backend Analyzer/robot_tests/python_detectors.robot">
+<test id="s1-s5-t1" name="Find unsafe Python security issues" line="5">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.979262" level="INFO">Running unsafe Python detector case.</msg>
+<arg>Running unsafe Python detector case.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.978930" elapsed="0.000408"/>
+</kw>
+<kw name="Create Temp Project" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.979913" level="INFO">${project} = /tmp/tmp8lxt70a_</msg>
+<var>${project}</var>
+<status status="PASS" start="2026-04-23T18:27:10.979521" elapsed="0.000436"/>
+</kw>
+<kw name="Write Project File" owner="BackendAnalyzerLibrary">
+<arg>${project}</arg>
+<arg>unsafe.py</arg>
+<arg>def unsafe_handler(user_input):\n</arg>
+<arg>config = eval(user_input)\n</arg>
+<arg>result = exec("print('hello')")\n</arg>
+<arg>db.execute(f"SELECT * FROM users WHERE name = '{user_input}'")\n</arg>
+<arg>return config, result</arg>
+<status status="PASS" start="2026-04-23T18:27:10.980130" elapsed="0.000539"/>
+</kw>
+<kw name="Run Keyword And Ignore Error" owner="BuiltIn">
+<kw name="Analyze File" owner="BackendAnalyzerLibrary">
+<arg>${project}/unsafe.py</arg>
+<status status="PASS" start="2026-04-23T18:27:10.981250" elapsed="0.001123"/>
+</kw>
+<msg time="2026-04-23T18:27:10.982523" level="INFO">${status} = PASS</msg>
+<msg time="2026-04-23T18:27:10.982587" level="INFO">${issues} = []</msg>
+<var>${status}</var>
+<var>${issues}</var>
+<arg>Analyze File</arg>
+<arg>${project}/unsafe.py</arg>
+<doc>Runs the given keyword with the given arguments and ignores possible error.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.980876" elapsed="0.001743"/>
+</kw>
+<kw name="Should Be Equal" owner="BuiltIn">
+<arg>${status}</arg>
+<arg>PASS</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.982795" elapsed="0.000437"/>
+</kw>
+<doc>Checks that unsafe Python patterns are detected as security issues.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.978510" elapsed="0.004897"/>
+</test>
+<test id="s1-s5-t2" name="Do not flag safe Python security code" line="13">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.984761" level="INFO">Running safe Python detector case.</msg>
+<arg>Running safe Python detector case.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.984439" elapsed="0.000395"/>
+</kw>
+<kw name="Create Temp Project" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.985413" level="INFO">${project} = /tmp/tmp6llafl9a</msg>
+<var>${project}</var>
+<status status="PASS" start="2026-04-23T18:27:10.985092" elapsed="0.000359"/>
+</kw>
+<kw name="Write Project File" owner="BackendAnalyzerLibrary">
+<arg>${project}</arg>
+<arg>safe.py</arg>
+<arg>import json\n\ndef safe_handler(user_input):\n</arg>
+<arg>config = json.loads(user_input)\n</arg>
+<arg>query = "SELECT * FROM users WHERE name = ?"\n</arg>
+<arg>return config, query</arg>
+<status status="PASS" start="2026-04-23T18:27:10.985660" elapsed="0.000456"/>
+</kw>
+<kw name="Run Keyword And Ignore Error" owner="BuiltIn">
+<kw name="Analyze File" owner="BackendAnalyzerLibrary">
+<arg>${project}/safe.py</arg>
+<status status="PASS" start="2026-04-23T18:27:10.986769" elapsed="0.001117"/>
+</kw>
+<msg time="2026-04-23T18:27:10.988021" level="INFO">${status} = PASS</msg>
+<msg time="2026-04-23T18:27:10.988079" level="INFO">${issues} = []</msg>
+<var>${status}</var>
+<var>${issues}</var>
+<arg>Analyze File</arg>
+<arg>${project}/safe.py</arg>
+<doc>Runs the given keyword with the given arguments and ignores possible error.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.986411" elapsed="0.001696"/>
+</kw>
+<kw name="Should Be Equal" owner="BuiltIn">
+<arg>${status}</arg>
+<arg>PASS</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.988298" elapsed="0.000407"/>
+</kw>
+<doc>Checks that safe Python code stays clean and does not create false positives.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.983896" elapsed="0.005025"/>
+</test>
+<test id="s1-s5-t3" name="Find Python validation and size problems" line="21">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.990316" level="INFO">Running Python validation and size detector case.</msg>
+<arg>Running Python validation and size detector case.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.990030" elapsed="0.000348"/>
+</kw>
+<kw name="Create Temp Project" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.991170" level="INFO">${project} = /tmp/tmpo12swrjl</msg>
+<var>${project}</var>
+<status status="PASS" start="2026-04-23T18:27:10.990577" elapsed="0.000629"/>
+</kw>
+<kw name="Write Project File" owner="BackendAnalyzerLibrary">
+<arg>${project}</arg>
+<arg>validation.py</arg>
+<arg>def create_user(name, age, email, role, status, country):\n</arg>
+<arg>user = {"name": name}\n</arg>
+<arg>if name:\n</arg>
+<arg>user["age"] = age\n</arg>
+<arg>if age &gt; 18:\n</arg>
+<arg>user["email"] = email\n</arg>
+<arg>if role == "admin":\n</arg>
+<arg>user["role"] = role\n</arg>
+<arg>if status:\n</arg>
+<arg>user["status"] = status\n</arg>
+<arg>if country:\n</arg>
+<arg>user["country"] = country\n</arg>
+<arg>return user</arg>
+<status status="PASS" start="2026-04-23T18:27:10.991405" elapsed="0.000553"/>
+</kw>
+<kw name="Run Keyword And Ignore Error" owner="BuiltIn">
+<kw name="Analyze File" owner="BackendAnalyzerLibrary">
+<arg>${project}/validation.py</arg>
+<status status="PASS" start="2026-04-23T18:27:10.992603" elapsed="0.001481"/>
+</kw>
+<msg time="2026-04-23T18:27:10.994247" level="INFO">${status} = PASS</msg>
+<msg time="2026-04-23T18:27:10.994307" level="INFO">${issues} = []</msg>
+<var>${status}</var>
+<var>${issues}</var>
+<arg>Analyze File</arg>
+<arg>${project}/validation.py</arg>
+<doc>Runs the given keyword with the given arguments and ignores possible error.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.992160" elapsed="0.002176"/>
+</kw>
+<kw name="Should Be Equal" owner="BuiltIn">
+<arg>${status}</arg>
+<arg>PASS</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.994531" elapsed="0.000424"/>
+</kw>
+<doc>Checks that Python code with weak validation and a large function is flagged.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.989477" elapsed="0.005625"/>
+</test>
+<test id="s1-s5-t4" name="Find framework neutral runtime risks" line="29">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:10.996357" level="INFO">Running framework-neutral Python detector case.</msg>
+<arg>Running framework-neutral Python detector case.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.995909" elapsed="0.000507"/>
+</kw>
+<kw name="Create Temp Project" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:10.996890" level="INFO">${project} = /tmp/tmp86o5nh2k</msg>
+<var>${project}</var>
+<status status="PASS" start="2026-04-23T18:27:10.996553" elapsed="0.000369"/>
+</kw>
+<kw name="Write Project File" owner="BackendAnalyzerLibrary">
+<arg>${project}</arg>
+<arg>framework_free.py</arg>
+<arg>def process_payment(payment_data):\n</arg>
+<arg>response = file_client.open("payment.txt")\n</arg>
+<arg>transaction_id = payment_data["transaction_id"]\n</arg>
+<arg>return transaction_id</arg>
+<status status="PASS" start="2026-04-23T18:27:10.997055" elapsed="0.000435"/>
+</kw>
+<kw name="Run Keyword And Ignore Error" owner="BuiltIn">
+<kw name="Analyze File" owner="BackendAnalyzerLibrary">
+<arg>${project}/framework_free.py</arg>
+<status status="PASS" start="2026-04-23T18:27:10.997968" elapsed="0.000912"/>
+</kw>
+<msg time="2026-04-23T18:27:10.998994" level="INFO">${status} = PASS</msg>
+<msg time="2026-04-23T18:27:10.999046" level="INFO">${issues} = []</msg>
+<var>${status}</var>
+<var>${issues}</var>
+<arg>Analyze File</arg>
+<arg>${project}/framework_free.py</arg>
+<doc>Runs the given keyword with the given arguments and ignores possible error.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.997643" elapsed="0.001429"/>
+</kw>
+<kw name="Should Be Equal" owner="BuiltIn">
+<arg>${status}</arg>
+<arg>PASS</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.999219" elapsed="0.000349"/>
+</kw>
+<doc>Checks that runtime risks are detected even without a specific framework.</doc>
+<status status="PASS" start="2026-04-23T18:27:10.995474" elapsed="0.004249"/>
+</test>
+<status status="PASS" start="2026-04-23T18:27:10.976787" elapsed="0.023478"/>
+</suite>
+<suite id="s1-s6" name="Unit Tests" source="/home/user/Desktop/Backend Analyzer/robot_tests/unit_tests.robot">
+<kw name="Initialize Unit Test Data" type="SETUP">
+<kw name="No Operation" owner="BuiltIn">
+<doc>Does absolutely nothing.</doc>
+<status status="PASS" start="2026-04-23T18:27:11.003105" elapsed="0.000232"/>
+</kw>
+<status status="PASS" start="2026-04-23T18:27:11.002883" elapsed="0.000534"/>
+</kw>
+<test id="s1-s6-t1" name="Find unsafe Python code" line="13">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:11.004170" level="INFO">Running unsafe Python unit test.</msg>
+<arg>Running unsafe Python unit test.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:11.003909" elapsed="0.000320"/>
+</kw>
+<kw name="Analyze Python Code" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:11.008800" level="INFO">${issues} = [Issue(detector_name='data_flow_security', issue_type=&lt;IssueType.SECURITY: 'security'&gt;, severity=&lt;IssueSeverity.HIGH: 'high'&gt;, title='Database query using string formatting', description='User data mi...</msg>
+<var>${issues}</var>
+<arg>${PYTHON_UNSAFE_CODE}</arg>
+<arg>unsafe.py</arg>
+<status status="PASS" start="2026-04-23T18:27:11.004367" elapsed="0.004502"/>
+</kw>
+<kw name="Issue Titles Should Contain" owner="BackendAnalyzerLibrary">
+<arg>${issues}</arg>
+<arg>eval()</arg>
+<status status="PASS" start="2026-04-23T18:27:11.009082" elapsed="0.000220"/>
+</kw>
+<kw name="Issue Titles Should Contain" owner="BackendAnalyzerLibrary">
+<arg>${issues}</arg>
+<arg>exec()</arg>
+<status status="PASS" start="2026-04-23T18:27:11.009451" elapsed="0.000203"/>
+</kw>
+<kw name="Issue Titles Should Contain" owner="BackendAnalyzerLibrary">
+<arg>${issues}</arg>
+<arg>Database query using string formatting</arg>
+<status status="PASS" start="2026-04-23T18:27:11.009790" elapsed="0.000181"/>
+</kw>
+<doc>Checks that unsafe Python code is flagged for security problems.</doc>
+<status status="PASS" start="2026-04-23T18:27:11.003476" elapsed="0.006654"/>
+</test>
+<test id="s1-s6-t2" name="Do not flag safe Python code" line="21">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:11.011104" level="INFO">Running safe Python unit test.</msg>
+<arg>Running safe Python unit test.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:11.010807" elapsed="0.000356"/>
+</kw>
+<kw name="Analyze Python Code" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:11.014228" level="INFO">${issues} = [Issue(detector_name='missing_validation', issue_type=&lt;IssueType.DESIGN: 'design'&gt;, severity=&lt;IssueSeverity.LOW: 'low'&gt;, title="Function safe_handler() doesn't say what type of data it expects", descr...</msg>
+<var>${issues}</var>
+<arg>${PYTHON_SAFE_CODE}</arg>
+<arg>safe.py</arg>
+<status status="PASS" start="2026-04-23T18:27:11.011302" elapsed="0.003026"/>
+</kw>
+<kw name="Issue Titles Should Not Contain" owner="BackendAnalyzerLibrary">
+<arg>${issues}</arg>
+<arg>eval()</arg>
+<status status="PASS" start="2026-04-23T18:27:11.014493" elapsed="0.000185"/>
+</kw>
+<kw name="Issue Titles Should Not Contain" owner="BackendAnalyzerLibrary">
+<arg>${issues}</arg>
+<arg>exec()</arg>
+<status status="PASS" start="2026-04-23T18:27:11.014825" elapsed="0.000169"/>
+</kw>
+<doc>Checks that safe Python code does not create false positives.</doc>
+<status status="PASS" start="2026-04-23T18:27:11.010362" elapsed="0.004775"/>
+</test>
+<test id="s1-s6-t3" name="Find Java controller problems" line="28">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:11.016014" level="INFO">Running Java controller unit test.</msg>
+<arg>Running Java controller unit test.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:11.015731" elapsed="0.000335"/>
+</kw>
+<kw name="Analyze Java Code" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:11.017257" level="INFO">${issues} = [Issue(detector_name='java_backend_review', issue_type=&lt;IssueType.RELIABILITY: 'reliability'&gt;, severity=&lt;IssueSeverity.MEDIUM: 'medium'&gt;, title='Java API handler createUser() accepts input without obv...</msg>
+<var>${issues}</var>
+<arg>${JAVA_UNSAFE_CODE}</arg>
+<arg>UserController.java</arg>
+<status status="PASS" start="2026-04-23T18:27:11.016205" elapsed="0.001089"/>
+</kw>
+<kw name="Issue Titles Should Contain" owner="BackendAnalyzerLibrary">
+<arg>${issues}</arg>
+<arg>accepts input without obvious validation</arg>
+<status status="PASS" start="2026-04-23T18:27:11.017440" elapsed="0.000160"/>
+</kw>
+<kw name="Issue Titles Should Contain" owner="BackendAnalyzerLibrary">
+<arg>${issues}</arg>
+<arg>swallows exceptions</arg>
+<status status="PASS" start="2026-04-23T18:27:11.017735" elapsed="0.000410"/>
+</kw>
+<doc>Checks that risky Java controller code is flagged.</doc>
+<status status="PASS" start="2026-04-23T18:27:11.015340" elapsed="0.002950"/>
+</test>
+<test id="s1-s6-t4" name="Do not flag safe Java code" line="35">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:11.019104" level="INFO">Running safe Java unit test.</msg>
+<arg>Running safe Java unit test.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:11.018869" elapsed="0.000287"/>
+</kw>
+<kw name="Analyze Java Code" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:11.020116" level="INFO">${issues} = []</msg>
+<var>${issues}</var>
+<arg>${JAVA_SAFE_CODE}</arg>
+<arg>HealthController.java</arg>
+<status status="PASS" start="2026-04-23T18:27:11.019292" elapsed="0.000856"/>
+</kw>
+<kw name="Issue Titles Should Not Contain" owner="BackendAnalyzerLibrary">
+<arg>${issues}</arg>
+<arg>swallows exceptions</arg>
+<status status="PASS" start="2026-04-23T18:27:11.020290" elapsed="0.000153"/>
+</kw>
+<doc>Checks that safe Java code stays clean.</doc>
+<status status="PASS" start="2026-04-23T18:27:11.018527" elapsed="0.002077"/>
+</test>
+<test id="s1-s6-t5" name="Find backend details from a sample project" line="41">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-04-23T18:27:11.021445" level="INFO">Running backend discovery unit test.</msg>
+<arg>Running backend discovery unit test.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-04-23T18:27:11.021214" elapsed="0.000283"/>
+</kw>
+<kw name="Create Sample Project" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:11.022096" level="INFO">${project} = /tmp/tmplzbqd61d</msg>
+<var>${project}</var>
+<status status="PASS" start="2026-04-23T18:27:11.021626" elapsed="0.000499"/>
+</kw>
+<kw name="Discover Backend" owner="BackendAnalyzerLibrary">
+<msg time="2026-04-23T18:27:11.022959" level="INFO">${discovery} = BackendDiscovery(runtime='Python', api_style='REST', database_type='Unknown', frameworks=['FastAPI'], endpoints=[DiscoveredEndpoint(name='health', kind='rest', method='GET', path='/health', source_fil...</msg>
+<var>${discovery}</var>
+<arg>${project}</arg>
+<status status="PASS" start="2026-04-23T18:27:11.022246" elapsed="0.000746"/>
+</kw>
+<kw name="Should Be Equal" owner="BuiltIn">
+<arg>${discovery.runtime}</arg>
+<arg>Python</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="PASS" start="2026-04-23T18:27:11.023166" elapsed="0.000627"/>
+</kw>
+<kw name="Should Be Equal" owner="BuiltIn">
+<arg>${discovery.api_style}</arg>
+<arg>REST</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="PASS" start="2026-04-23T18:27:11.023977" elapsed="0.000573"/>
+</kw>
+<kw name="Cleanup Sample Project" owner="BackendAnalyzerLibrary" type="TEARDOWN">
+<status status="PASS" start="2026-04-23T18:27:11.024779" elapsed="0.000216"/>
+</kw>
+<doc>Checks that backend discovery works on a small sample project.</doc>
+<status status="PASS" start="2026-04-23T18:27:11.020827" elapsed="0.004256"/>
+</test>
+<kw name="Clean Up Unit Test Data" type="TEARDOWN">
+<kw name="No Operation" owner="BuiltIn">
+<doc>Does absolutely nothing.</doc>
+<status status="PASS" start="2026-04-23T18:27:11.025797" elapsed="0.000225"/>
+</kw>
+<status status="PASS" start="2026-04-23T18:27:11.025609" elapsed="0.000480"/>
+</kw>
+<status status="PASS" start="2026-04-23T18:27:11.000783" elapsed="0.025339"/>
+</suite>
+<status status="PASS" start="2026-04-23T18:27:10.154710" elapsed="0.872070"/>
+</suite>
+<statistics>
+<total>
+<stat pass="49" fail="0" skip="0">All Tests</stat>
+</total>
+<tag>
+</tag>
+<suite>
+<stat name="Robot Tests" id="s1" pass="49" fail="0" skip="0">Robot Tests</stat>
+<stat name="Discovery Tests" id="s1-s1" pass="29" fail="0" skip="0">Robot Tests.Discovery Tests</stat>
+<stat name="Engine Tests" id="s1-s2" pass="4" fail="0" skip="0">Robot Tests.Engine Tests</stat>
+<stat name="Functional Tests" id="s1-s3" pass="4" fail="0" skip="0">Robot Tests.Functional Tests</stat>
+<stat name="Java Detectors" id="s1-s4" pass="3" fail="0" skip="0">Robot Tests.Java Detectors</stat>
+<stat name="Python Detectors" id="s1-s5" pass="4" fail="0" skip="0">Robot Tests.Python Detectors</stat>
+<stat name="Unit Tests" id="s1-s6" pass="5" fail="0" skip="0">Robot Tests.Unit Tests</stat>
+</suite>
+</statistics>
+<errors>
+</errors>
+</robot>

@@ -549,10 +549,12 @@ class AnalyzerGUI(QMainWindow):
         query_label = QLabel("Request Body / Query")
         query_label.setObjectName("EditorLabel")
         request_grid.addWidget(query_label, 1, 0)
+        self.query_label = query_label
 
         variables_label = QLabel("GraphQL Variables")
         variables_label.setObjectName("EditorLabel")
         request_grid.addWidget(variables_label, 1, 1)
+        self.variables_label = variables_label
 
         self.query_text = QTextEdit()
         self.query_text.setMinimumHeight(170)
@@ -1136,7 +1138,7 @@ class AnalyzerGUI(QMainWindow):
 
     def _serialize_endpoint_variables(self, endpoint) -> str:
         if endpoint is None or endpoint.kind != "graphql":
-            return "{}"
+            return ""
         return json.dumps(endpoint.graphql_variables or {}, indent=2)
 
     def _sync_endpoint_preview(self, endpoint) -> None:
@@ -1160,12 +1162,11 @@ class AnalyzerGUI(QMainWindow):
                 graphql_enabled=True,
             )
         else:
-            response_example = json.dumps(endpoint.example_response_body or {}, indent=2) if endpoint.example_response_body else '{\n  "message": "No response example available."\n}'
             self.request_mode_badge.setText("Request Mode: REST request body + response format")
-            self.request_hint_label.setText("Edit the request body on the left. The right panel shows the expected response format with available fields.")
+            self.request_hint_label.setText("Edit the request body on the left. The right panel is hidden for REST.")
             self._set_request_editors(
-                body_text=self._serialize_endpoint_example(endpoint),
-                variables_text=response_example,
+                body_text="",
+                variables_text="",
                 graphql_enabled=False,
             )
 
@@ -1836,6 +1837,9 @@ class AnalyzerGUI(QMainWindow):
         self.variables_text.setPlainText(variables_text)
         self.variables_text.setReadOnly(not graphql_enabled)
         self.variables_text.setEnabled(graphql_enabled)
+        self.variables_label.setVisible(graphql_enabled)
+        self.variables_text.setVisible(graphql_enabled)
+        self.query_label.setText("Request Body" if not graphql_enabled else "Request Body / Query")
 
     def _append_log(self, content: str) -> None:
         cursor = self.log_text.textCursor()
