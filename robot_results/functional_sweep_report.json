@@ -1,0 +1,180 @@
+{
+  "config_path": "Functional Sweep",
+  "total": 5,
+  "passed": 0,
+  "failed": 5,
+  "by_endpoint": {
+    "http://localhost:8000/graphql": {
+      "total": 4,
+      "passed": 0,
+      "failed": 4,
+      "results": [
+        {
+          "name": "POST /graphql :: hello baseline",
+          "passed": false,
+          "status_code": 404,
+          "response_time_ms": 34.3,
+          "message": "Expected HTTP 200, got HTTP 404."
+        },
+        {
+          "name": "POST /graphql :: hello variant-1",
+          "passed": false,
+          "status_code": 404,
+          "response_time_ms": 0.9,
+          "message": "Expected HTTP 200, got HTTP 404."
+        },
+        {
+          "name": "POST /graphql :: hello variant-2",
+          "passed": false,
+          "status_code": 404,
+          "response_time_ms": 0.8,
+          "message": "Expected HTTP 200, got HTTP 404."
+        },
+        {
+          "name": "POST /graphql :: hello variant-3",
+          "passed": false,
+          "status_code": 404,
+          "response_time_ms": 1.0,
+          "message": "Expected HTTP 200, got HTTP 404."
+        }
+      ]
+    },
+    "http://localhost:8000/api/hello": {
+      "total": 1,
+      "passed": 0,
+      "failed": 1,
+      "results": [
+        {
+          "name": "GET /api/hello",
+          "passed": false,
+          "status_code": 404,
+          "response_time_ms": 0.9,
+          "message": "Expected HTTP 200, got HTTP 404."
+        }
+      ]
+    }
+  },
+  "results": [
+    {
+      "name": "POST /graphql :: hello baseline",
+      "endpoint": "http://localhost:8000/graphql",
+      "passed": false,
+      "status_code": 404,
+      "response_time_ms": 34.3,
+      "message": "Expected HTTP 200, got HTTP 404.",
+      "details": [
+        "Expected JSON field 'data' to be present and not null."
+      ],
+      "request_method": "POST",
+      "request_headers": {
+        "Content-Type": "application/json"
+      },
+      "request_body": "{\"query\": \"query helloQuery($name: String!) {\\n  hello(name: $name)\\n}\", \"variables\": {\"name\": \"example\"}}",
+      "response_headers": {
+        "date": "Tue, 28 Apr 2026 11:54:09 GMT",
+        "server": "uvicorn",
+        "content-length": "22",
+        "content-type": "application/json",
+        "connection": "close"
+      },
+      "response_body": "{\"detail\":\"Not Found\"}",
+      "response_preview": "{\"detail\":\"Not Found\"}"
+    },
+    {
+      "name": "POST /graphql :: hello variant-1",
+      "endpoint": "http://localhost:8000/graphql",
+      "passed": false,
+      "status_code": 404,
+      "response_time_ms": 0.9,
+      "message": "Expected HTTP 200, got HTTP 404.",
+      "details": [
+        "Expected JSON field 'data' to be present and not null."
+      ],
+      "request_method": "POST",
+      "request_headers": {
+        "Content-Type": "application/json"
+      },
+      "request_body": "{\"query\": \"query helloQuery($name: String!) {\\n  hello(name: $name)\\n}\", \"variables\": {\"name\": \"example\"}}",
+      "response_headers": {
+        "date": "Tue, 28 Apr 2026 11:54:09 GMT",
+        "server": "uvicorn",
+        "content-length": "22",
+        "content-type": "application/json",
+        "connection": "close"
+      },
+      "response_body": "{\"detail\":\"Not Found\"}",
+      "response_preview": "{\"detail\":\"Not Found\"}"
+    },
+    {
+      "name": "POST /graphql :: hello variant-2",
+      "endpoint": "http://localhost:8000/graphql",
+      "passed": false,
+      "status_code": 404,
+      "response_time_ms": 0.8,
+      "message": "Expected HTTP 200, got HTTP 404.",
+      "details": [
+        "Expected JSON field 'data' to be present and not null."
+      ],
+      "request_method": "POST",
+      "request_headers": {
+        "Content-Type": "application/json"
+      },
+      "request_body": "{\"query\": \"query helloQuery($name: String!) {\\n  hello(name: $name)\\n}\", \"variables\": {\"name\": \"example-1\"}}",
+      "response_headers": {
+        "date": "Tue, 28 Apr 2026 11:54:09 GMT",
+        "server": "uvicorn",
+        "content-length": "22",
+        "content-type": "application/json",
+        "connection": "close"
+      },
+      "response_body": "{\"detail\":\"Not Found\"}",
+      "response_preview": "{\"detail\":\"Not Found\"}"
+    },
+    {
+      "name": "POST /graphql :: hello variant-3",
+      "endpoint": "http://localhost:8000/graphql",
+      "passed": false,
+      "status_code": 404,
+      "response_time_ms": 1.0,
+      "message": "Expected HTTP 200, got HTTP 404.",
+      "details": [
+        "Expected JSON field 'data' to be present and not null."
+      ],
+      "request_method": "POST",
+      "request_headers": {
+        "Content-Type": "application/json"
+      },
+      "request_body": "{\"query\": \"query helloQuery($name: String!) {\\n  hello(name: $name)\\n}\", \"variables\": {\"name\": \"example-2\"}}",
+      "response_headers": {
+        "date": "Tue, 28 Apr 2026 11:54:09 GMT",
+        "server": "uvicorn",
+        "content-length": "22",
+        "content-type": "application/json",
+        "connection": "close"
+      },
+      "response_body": "{\"detail\":\"Not Found\"}",
+      "response_preview": "{\"detail\":\"Not Found\"}"
+    },
+    {
+      "name": "GET /api/hello",
+      "endpoint": "http://localhost:8000/api/hello",
+      "passed": false,
+      "status_code": 404,
+      "response_time_ms": 0.9,
+      "message": "Expected HTTP 200, got HTTP 404.",
+      "details": [],
+      "request_method": "GET",
+      "request_headers": {},
+      "request_body": null,
+      "response_headers": {
+        "date": "Tue, 28 Apr 2026 11:54:09 GMT",
+        "server": "uvicorn",
+        "content-length": "22",
+        "content-type": "application/json",
+        "connection": "close"
+      },
+      "response_body": "{\"detail\":\"Not Found\"}",
+      "response_preview": "{\"detail\":\"Not Found\"}"
+    }
+  ]
+}

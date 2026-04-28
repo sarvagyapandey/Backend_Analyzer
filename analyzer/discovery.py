@@ -84,7 +84,7 @@ def _is_graphql_scalar_type(type_name: str) -> bool:
 
 
 def _graphql_placeholder_selection() -> str:
-    return " {\n    field1\n    field2\n  }"
+    return " {\n    __typename\n  }"
 
 
 @dataclass
@@ -462,11 +462,24 @@ class BackendDiscoveryEngine:
         type_name: str,
         object_fields: Dict[str, List[Tuple[str, str]]],
         depth: int = 0,
+        visited: Optional[Set[str]] = None,
     ) -> str:
         normalized = self._normalize_graphql_schema_type(type_name)
         if not normalized or _is_graphql_scalar_type(normalized):
             return ""
-        return _graphql_placeholder_selection()
+        visited = set(visited or set())
+        if normalized in visited or depth >= 4:
+            return ""
+        visited.add(normalized)
+        return self._build_graphql_selection_block(
+            object_fields.get(normalized, []),
+            lambda field_type: self._graphql_selection_from_schema_type(
+                field_type,
+                object_fields,
+                depth=depth + 1,
+                visited=visited,
+            ),
+        )
 
     def _extract_graphql_path_from_config(self, file_path: str) -> str:
         try:
@@ -1132,11 +1145,24 @@ class BackendDiscoveryEngine:
         return_type: str,
         java_type_fields: Dict[str, Dict[str, str]],
         depth: int = 0,
+        visited: Optional[Set[str]] = None,
     ) -> str:
         normalized = self._normalize_java_type_name(return_type)
         if normalized in JAVA_SIMPLE_TYPE_EXAMPLES or normalized in {"", "void", "Void"}:
             return ""
-        return _graphql_placeholder_selection()
+        visited = set(visited or set())
+        if normalized in visited or depth >= 4:
+            return ""
+        visited.add(normalized)
+        return self._build_graphql_selection_block(
+            java_type_fields.get(normalized, {}).items(),
+            lambda field_type: self._build_java_graphql_selection(
+                field_type,
+                java_type_fields,
+                depth=depth + 1,
+                visited=visited,
+            ),
+        )
 
     def _java_type_to_graphql_type(self, type_name: str) -> str:
         normalized = self._normalize_java_type_name(type_name)
@@ -1195,6 +1221,24 @@ class BackendDiscoveryEngine:
         if not parts:
             return name
         return parts[0] + "".join(part[:1].upper() + part[1:] for part in parts[1:])
+
+    def _build_graphql_selection_block(self, fields, nested_selection_builder) -> str:
+        rendered_fields: List[str] = []
+        for entry in fields:
+            if isinstance(entry, tuple):
+                field_name, field_type = entry
+            else:
+                field_name, field_type = entry, ""
+            field_name = str(field_name)
+            field_type = str(field_type)
+            nested = nested_selection_builder(field_type) if field_type else ""
+            rendered_fields.append(f"{field_name}{nested}")
+
+        if not rendered_fields:
+            return ""
+
+        body = "\n    ".join(rendered_fields)
+        return f" {{\n    {body}\n  }}"
 
 
 class _PythonDiscoveryVisitor(ast.NodeVisitor):
@@ -1725,7 +1769,34 @@ class _PythonDiscoveryVisitor(ast.NodeVisitor):
             return ""
         if _is_graphql_scalar_type(type_name):
             return ""
-        return _graphql_placeholder_selection()
+        return self._graphql_selection_for_type_name(type_name, depth=depth)
+
+    def _graphql_selection_for_type_name(self, type_name: str, depth: int = 0, visited: Optional[Set[str]] = None) -> str:
+        normalized = self._graphql_type_name_from_string(type_name)
+        if not normalized or _is_graphql_scalar_type(normalized):
+            return ""
+        visited = set(visited or set())
+        if normalized in visited or depth >= 4:
+            return ""
+        visited.add(normalized)
+
+        class_node = self._resolve_class_node(normalized)
+        if class_node is None:
+            fields = self.graphql_type_fields.get(normalized, [])
+        else:
+            fields = self._extract_graphql_type_fields(class_node)
+
+        rendered_fields: List[str] = []
+        for field_name in fields:
+            field_annotation = self._graphql_field_annotation(normalized, field_name)
+            nested = self._graphql_selection_for_annotation(field_annotation, depth + 1) if field_annotation else ""
+            rendered_fields.append(f"{field_name}{nested}")
+
+        if not rendered_fields:
+            return ""
+
+        body = "\n    ".join(rendered_fields)
+        return f" {{\n    {body}\n  }}"
 
     def _graphql_field_annotation(self, type_name: str, field_name: str) -> Optional[ast.AST]:
         class_node = self._resolve_class_node(type_name)
@@ -1766,6 +1837,16 @@ class _PythonDiscoveryVisitor(ast.NodeVisitor):
                 return left_name
             return self._graphql_type_name(annotation.right)
         return self._name_from_expr(annotation).split(".")[-1]
+
+    def _graphql_type_name_from_string(self, type_name: str) -> str:
+        cleaned = str(type_name).strip()
+        if not cleaned:
+            return ""
+        cleaned = cleaned.split(".")[-1]
+        cleaned = cleaned.replace("!", "")
+        if "[" in cleaned and "]" in cleaned:
+            cleaned = cleaned.replace("[", "").replace("]", "")
+        return cleaned
 
     def _graphql_variable_type(self, annotation: Optional[ast.AST]) -> str:
         if annotation is None:

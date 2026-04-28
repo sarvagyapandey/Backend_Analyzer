@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Functional Test Report</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; color: #111827; }
+    h1, h2 { margin-bottom: 8px; }
+    .summary { display: grid; grid-template-columns: repeat(4, minmax(120px, 1fr)); gap: 12px; margin: 18px 0 28px; }
+    .card { background: #f8fafc; border: 1px solid #d1d5db; border-radius: 10px; padding: 14px; }
+    table { border-collapse: collapse; width: 100%; margin-bottom: 28px; }
+    th, td { border: 1px solid #d1d5db; padding: 8px; vertical-align: top; text-align: left; }
+    th { background: #eff6ff; }
+    .pass { color: #166534; font-weight: 700; }
+    .fail { color: #b91c1c; font-weight: 700; }
+    pre { white-space: pre-wrap; word-break: break-word; margin: 0; }
+  </style>
+</head>
+<body>
+  <h1>Functional Test Report</h1>
+  <div class="summary">
+    <div class="card"><strong>Total</strong><div>5</div></div>
+    <div class="card"><strong>Passed</strong><div class="pass">0</div></div>
+    <div class="card"><strong>Failed</strong><div class="fail">5</div></div>
+    <div class="card"><strong>Source</strong><div>Functional Sweep</div></div>
+  </div>
+  <h2>By Endpoint</h2>
+  <table>
+    <thead><tr><th>Endpoint</th><th>Total</th><th>Passed</th><th>Failed</th></tr></thead>
+    <tbody>
+      <tr><td>http://localhost:8000/graphql</td><td>4</td><td>0</td><td>4</td></tr><tr><td>http://localhost:8000/api/hello</td><td>1</td><td>0</td><td>1</td></tr>
+    </tbody>
+  </table>
+  <h2>Runs</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Test</th><th>Status</th><th>Endpoint</th><th>Method</th><th>HTTP</th><th>Time (ms)</th><th>Request Body</th><th>Response Body</th><th>Message</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>POST /graphql :: hello baseline</td><td class='fail'>FAIL</td><td>http://localhost:8000/graphql</td><td>POST</td><td>404</td><td>34.3</td><td><pre>{&quot;query&quot;: &quot;query helloQuery($name: String!) {\n  hello(name: $name)\n}&quot;, &quot;variables&quot;: {&quot;name&quot;: &quot;example&quot;}}</pre></td><td><pre>{&quot;detail&quot;:&quot;Not Found&quot;}</pre></td><td><pre>Expected HTTP 200, got HTTP 404.</pre></td></tr><tr><td>POST /graphql :: hello variant-1</td><td class='fail'>FAIL</td><td>http://localhost:8000/graphql</td><td>POST</td><td>404</td><td>0.9</td><td><pre>{&quot;query&quot;: &quot;query helloQuery($name: String!) {\n  hello(name: $name)\n}&quot;, &quot;variables&quot;: {&quot;name&quot;: &quot;example&quot;}}</pre></td><td><pre>{&quot;detail&quot;:&quot;Not Found&quot;}</pre></td><td><pre>Expected HTTP 200, got HTTP 404.</pre></td></tr><tr><td>POST /graphql :: hello variant-2</td><td class='fail'>FAIL</td><td>http://localhost:8000/graphql</td><td>POST</td><td>404</td><td>0.8</td><td><pre>{&quot;query&quot;: &quot;query helloQuery($name: String!) {\n  hello(name: $name)\n}&quot;, &quot;variables&quot;: {&quot;name&quot;: &quot;example-1&quot;}}</pre></td><td><pre>{&quot;detail&quot;:&quot;Not Found&quot;}</pre></td><td><pre>Expected HTTP 200, got HTTP 404.</pre></td></tr><tr><td>POST /graphql :: hello variant-3</td><td class='fail'>FAIL</td><td>http://localhost:8000/graphql</td><td>POST</td><td>404</td><td>1.0</td><td><pre>{&quot;query&quot;: &quot;query helloQuery($name: String!) {\n  hello(name: $name)\n}&quot;, &quot;variables&quot;: {&quot;name&quot;: &quot;example-2&quot;}}</pre></td><td><pre>{&quot;detail&quot;:&quot;Not Found&quot;}</pre></td><td><pre>Expected HTTP 200, got HTTP 404.</pre></td></tr><tr><td>GET /api/hello</td><td class='fail'>FAIL</td><td>http://localhost:8000/api/hello</td><td>GET</td><td>404</td><td>0.9</td><td><pre></pre></td><td><pre>{&quot;detail&quot;:&quot;Not Found&quot;}</pre></td><td><pre>Expected HTTP 200, got HTTP 404.</pre></td></tr>
+    </tbody>
+  </table>
+</body>
+</html>

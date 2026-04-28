@@ -37,3 +37,14 @@ Fails broken GraphQL query
     ${summary}=    Run Functional Tests    ${tests}
     Should Be Equal As Integers    ${summary.failed}    1
     Log    Passed because the broken GraphQL query was detected as a failing contract.
+
+Builds multiple functional variants from discovered endpoints
+    [Documentation]    Checks that the runner generates multiple payload variants per endpoint.
+    Log    Running functional auto-generation case.
+    ${project}=    Create Temp Project
+    Write Project File    ${project}    app.py    from fastapi import FastAPI\nfrom pydantic import BaseModel\n\napp = FastAPI()\n\nclass UserCreate(BaseModel):\n    name: str\n    age: int\n\n@app.post("/users")\nasync def create_user(payload: UserCreate):\n    return payload
+    ${discovery}=    Discover Backend    ${project}
+    ${tests}=    Build Auto Functional Tests    ${discovery}    ${BASE_URL}
+    ${count}=    Evaluate    len($tests)
+    Should Be True    ${count} >= 2
+    Log    Passed because multiple test variants were generated for the discovered endpoint.

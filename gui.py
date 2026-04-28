@@ -9,16 +9,19 @@ import os
 import sys
 import ctypes.util
 import shutil
+import webbrowser
 from contextlib import redirect_stderr, redirect_stdout
 from typing import Optional
 
 from analyzer.engine import AnalysisEngine, run_analysis
+from analyzer.functional_testing import FunctionalTestRunner
 from analyzer.issue import IssueSeverity
 
 try:
     from PySide6.QtCore import QThread, Qt, QTimer, Signal
     from PySide6.QtWidgets import (
         QApplication,
+        QCheckBox,
         QFileDialog,
         QFrame,
         QGridLayout,
@@ -32,6 +35,7 @@ try:
         QScrollArea,
         QSizePolicy,
         QSplitter,
+        QTabWidget,
         QTextEdit,
         QTreeWidget,
         QTreeWidgetItem,
@@ -53,12 +57,14 @@ except ImportError:  # pragma: no cover - import availability depends on runtime
     QScrollArea = object
     QSizePolicy = object
     QSplitter = object
+    QTabWidget = object
     QTextEdit = object
     QTreeWidget = object
     QTreeWidgetItem = object
     QVBoxLayout = object
     QWidget = object
     QFileDialog = object
+    QCheckBox = object
 
     class _QtFallback:
         LeftButton = 1
@@ -223,12 +229,15 @@ class AnalysisWorker(QThread):
     def run(self) -> None:
         engine = AnalysisEngine()
         log_writer = _ThreadSafeLogWriter(self.log_message.emit)
+        functional_tests = self.functional_test
+        if functional_tests and isinstance(functional_tests, dict):
+            functional_tests = [functional_tests]
 
         try:
             with redirect_stdout(log_writer), redirect_stderr(log_writer):
                 report = engine.analyze_path(
                     self.path,
-                    functional_tests=[self.functional_test] if self.functional_test else None,
+                    functional_tests=functional_tests,
                     functional_base_url=self.base_url,
                     functional_source_label=self.source_label or "Functional Test Builder",
                 )
@@ -251,9 +260,12 @@ class AnalyzerGUI(QMainWindow):
         self.live_result_lookup: dict[QTreeWidgetItem, object] = {}
         self.functional_findings_lookup: dict[QTreeWidgetItem, object] = {}
         self.endpoint_lookup: dict[QTreeWidgetItem, object] = {}
+        self.functional_runner = FunctionalTestRunner()
         self.worker: Optional[AnalysisWorker] = None
         self.current_endpoint_kind = "Unknown"
         self.latest_live_result_text = ""
+        self._last_functional_report_path = ""
+        self._last_functional_summary = None
 
         self._build_ui()
         self._apply_styles()
@@ -494,16 +506,28 @@ class AnalyzerGUI(QMainWindow):
         explorer_layout.addWidget(self._section_title("🌐 API Explorer", "Select an endpoint to test it against your running backend"))
 
         base_row = QHBoxLayout()
-        base_row.setSpacing(12)
+        base_row.setSpacing(10)
         base_url_field, self.base_url_input = self._labeled_line_edit("Base URL", "http://localhost:8000")
-        base_row.addWidget(base_url_field, 1)
+        base_row.addWidget(base_url_field, 2)
         self.base_url_input.setMinimumHeight(40)
+        self.base_url_input.setFixedHeight(40)
         self.base_url_input.setText("http://localhost:8000")
         self.endpoint_run_button = QPushButton("📤 Send Test")
         self.endpoint_run_button.setMinimumHeight(40)
-        self.endpoint_run_button.setMaximumWidth(140)
+        self.endpoint_run_button.setFixedWidth(148)
         self.endpoint_run_button.clicked.connect(self.run_selected_endpoint_test)
         base_row.addWidget(self.endpoint_run_button)
+        self.endpoint_sweep_button = QPushButton("🧪 Run Test Cases")
+        self.endpoint_sweep_button.setMinimumHeight(40)
+        self.endpoint_sweep_button.setFixedWidth(162)
+        self.endpoint_sweep_button.clicked.connect(self.run_functional_sweep)
+        base_row.addWidget(self.endpoint_sweep_button)
+        self.open_report_button = QPushButton("📄 Open Report")
+        self.open_report_button.setMinimumHeight(40)
+        self.open_report_button.setFixedWidth(148)
+        self.open_report_button.clicked.connect(self.open_functional_report)
+        base_row.addWidget(self.open_report_button)
+        base_row.setAlignment(Qt.AlignVCenter)
         explorer_layout.addLayout(base_row)
 
         self.selected_endpoint_label = QLabel("Analyze first to discover endpoints →")
@@ -657,12 +681,15 @@ class AnalyzerGUI(QMainWindow):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(16)
 
+        functional_splitter = QSplitter(Qt.Horizontal)
+        functional_splitter.setChildrenCollapsible(False)
+
         functional_panel = QFrame()
         functional_panel.setObjectName("Panel")
         functional_layout = QVBoxLayout(functional_panel)
         functional_layout.setContentsMargins(26, 26, 26, 26)
         functional_layout.setSpacing(16)
-        functional_layout.addWidget(self._section_title("⚙️ Functional Findings", "Actionable failures surfaced by live checks"))
+        functional_layout.addWidget(self._section_title("⚙️ Functional Checks", "Test results and diagnosis in one place"))
 
         self.functional_findings_tree = QTreeWidget()
         self.functional_findings_tree.setColumnCount(4)
@@ -670,9 +697,56 @@ class AnalyzerGUI(QMainWindow):
         self.functional_findings_tree.setRootIsDecorated(False)
         self.functional_findings_tree.itemSelectionChanged.connect(self._on_functional_finding_selected)
         self.functional_findings_tree.header().setStretchLastSection(True)
-        self.functional_findings_tree.setMinimumHeight(180)
+        self.functional_findings_tree.setMinimumHeight(220)
         functional_layout.addWidget(self.functional_findings_tree, 1)
-        layout.addWidget(functional_panel, 1)
+        functional_splitter.addWidget(functional_panel)
+
+        diagnosis_panel = QFrame()
+        diagnosis_panel.setObjectName("Panel")
+        diagnosis_layout = QVBoxLayout(diagnosis_panel)
+        diagnosis_layout.setContentsMargins(26, 26, 26, 26)
+        diagnosis_layout.setSpacing(16)
+        diagnosis_layout.addWidget(self._section_title("🛠 Functional Diagnosis", "Why a live check failed and what to do next"))
+
+        self.functional_report_tabs = QTabWidget()
+        self.functional_report_tabs.setDocumentMode(True)
+        self.functional_report_tabs.setTabsClosable(False)
+        diagnosis_layout.addWidget(self.functional_report_tabs)
+
+        self.functional_detail_title = QLabel("Select a functional finding below →")
+        self.functional_detail_title.setObjectName("DetailTitle")
+        self.functional_detail_title.setWordWrap(True)
+        self.functional_report_tabs.addTab(self.functional_detail_title, "Overview")
+
+        self.functional_detail_meta = QLabel("")
+        self.functional_detail_meta.setObjectName("HintLabel")
+        self.functional_detail_meta.setWordWrap(True)
+        self.functional_report_tabs.addTab(self.functional_detail_meta, "By Endpoint")
+
+        self.functional_detail_body = QTextEdit()
+        self.functional_detail_body.setReadOnly(True)
+        self.functional_detail_body.setMinimumHeight(180)
+        self.functional_detail_body.setPlainText("Select a functional finding to inspect the failure details here.")
+        self.functional_report_tabs.addTab(self.functional_detail_body, "Runs")
+        functional_splitter.addWidget(diagnosis_panel)
+        functional_splitter.setStretchFactor(0, 3)
+        functional_splitter.setStretchFactor(1, 2)
+        layout.addWidget(functional_splitter, 1)
+
+        log_panel = QFrame()
+        log_panel.setObjectName("Panel")
+        log_layout = QVBoxLayout(log_panel)
+        log_layout.setContentsMargins(26, 26, 26, 26)
+        log_layout.setSpacing(16)
+        log_layout.addWidget(self._section_title("📋 Analysis Log", "Real-time output from the analyzer"))
+
+        self.log_text = QTextEdit()
+        self.log_text.setReadOnly(True)
+        self.log_text.setMinimumHeight(150)
+        self.log_text.setPlainText("Logs will appear here during analysis.\n")
+        self.log_text.setFont(self._get_monospace_font())
+        log_layout.addWidget(self.log_text, 1)
+        layout.addWidget(log_panel, 1)
         return wrapper
 
     def _build_live_api_panel(self) -> QWidget:
@@ -728,46 +802,6 @@ class AnalyzerGUI(QMainWindow):
         layout = QVBoxLayout(wrapper)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(22)
-
-        functional_detail_panel = QFrame()
-        functional_detail_panel.setObjectName("Panel")
-        functional_detail_layout = QVBoxLayout(functional_detail_panel)
-        functional_detail_layout.setContentsMargins(26, 26, 26, 26)
-        functional_detail_layout.setSpacing(16)
-        functional_detail_layout.addWidget(self._section_title("🛠 Functional Diagnosis", "Why a live check failed and what to do next"))
-
-        self.functional_detail_title = QLabel("Select a functional finding below →")
-        self.functional_detail_title.setObjectName("DetailTitle")
-        self.functional_detail_title.setWordWrap(True)
-        functional_detail_layout.addWidget(self.functional_detail_title)
-
-        self.functional_detail_meta = QLabel("")
-        self.functional_detail_meta.setObjectName("HintLabel")
-        self.functional_detail_meta.setWordWrap(True)
-        functional_detail_layout.addWidget(self.functional_detail_meta)
-
-        self.functional_detail_body = QTextEdit()
-        self.functional_detail_body.setReadOnly(True)
-        self.functional_detail_body.setMinimumHeight(180)
-        self.functional_detail_body.setPlainText("Select a functional finding to inspect the failure details here.")
-        functional_detail_layout.addWidget(self.functional_detail_body, 1)
-        layout.addWidget(functional_detail_panel, 1)
-
-        # LOG
-        log_panel = QFrame()
-        log_panel.setObjectName("Panel")
-        log_layout = QVBoxLayout(log_panel)
-        log_layout.setContentsMargins(26, 26, 26, 26)
-        log_layout.setSpacing(16)
-        log_layout.addWidget(self._section_title("📋 Analysis Log", "Real-time output from the analyzer"))
-
-        self.log_text = QTextEdit()
-        self.log_text.setReadOnly(True)
-        self.log_text.setMinimumHeight(150)
-        self.log_text.setPlainText("Logs will appear here during analysis.\n")
-        self.log_text.setFont(self._get_monospace_font())
-        log_layout.addWidget(self.log_text, 1)
-        layout.addWidget(log_panel, 1)
         return wrapper
     
     def _get_monospace_font(self):
@@ -1205,6 +1239,38 @@ class AnalyzerGUI(QMainWindow):
         self._clear_report_views()
         self._start_worker(normalized, functional_test, f"{endpoint.method} {endpoint.path}")
 
+    def run_functional_sweep(self) -> None:
+        path = self.path_input.text().strip()
+        if not path:
+            QMessageBox.critical(self, "Missing target", "Choose a file or folder to analyze first.")
+            return
+
+        report = self.current_report
+        discovery = getattr(report, "backend_discovery", None) if report else None
+        if discovery is None or not getattr(discovery, "endpoints", None):
+            QMessageBox.critical(self, "Missing endpoints", "Analyze the codebase first so discovered endpoints are available.")
+            return
+
+        base_url = self.base_url_input.text().strip()
+        if not base_url:
+            QMessageBox.critical(self, "Missing base URL", "Enter the running backend base URL before running the sweep.")
+            return
+
+        tests = self.functional_runner.build_auto_tests_from_discovery(discovery, base_url=base_url)
+        if not tests:
+            QMessageBox.critical(self, "No tests generated", "No functional test variants could be generated from the discovered endpoints.")
+            return
+
+        normalized = os.path.abspath(os.path.expanduser(path))
+        self.status_label.setText(f"Running functional sweep across {len(discovery.endpoints)} endpoints...")
+        self.summary_label.setText(f"Functional sweep against {base_url}")
+        self._reset_log_view()
+        self._append_log(f"$ Analyzing {normalized}\n")
+        self._append_log(f"$ Functional sweep across {len(discovery.endpoints)} endpoints against {base_url}\n")
+        self._set_busy(True)
+        self._clear_report_views()
+        self._start_worker(normalized, tests, "Functional Sweep")
+
     def start_analysis(self) -> None:
         if self.worker and self.worker.isRunning():
             return
@@ -1255,6 +1321,8 @@ class AnalyzerGUI(QMainWindow):
         self.current_report = report
         self._populate_discovery(report.backend_discovery)
         self._render_report(path, report)
+        self._export_functional_report(report)
+        self._last_functional_summary = report.functional_summary
         if report.functional_summary:
             self._populate_live_results(report.functional_summary)
             self._populate_functional_findings(report.functional_issues)
@@ -1298,6 +1366,31 @@ class AnalyzerGUI(QMainWindow):
         self._populate_issues(report.issues)
         if not report.issues:
             self._render_insights(report)
+
+    def _export_functional_report(self, report) -> None:
+        functional_summary = getattr(report, "functional_summary", None)
+        if not functional_summary:
+            return
+
+        report_dir = os.path.join(os.getcwd(), "robot_results")
+        os.makedirs(report_dir, exist_ok=True)
+        html_path = os.path.join(report_dir, "functional_sweep_report.html")
+        json_path = os.path.join(report_dir, "functional_sweep_report.json")
+        try:
+            functional_summary.write_html_report(html_path)
+            functional_summary.write_json_report(json_path)
+            self._last_functional_report_path = html_path
+            self._append_log(f"Functional report written to {html_path}\n")
+            self._append_log(f"Functional data written to {json_path}\n")
+        except Exception as exc:
+            self._append_log(f"Could not write functional report: {exc}\n")
+
+    def open_functional_report(self) -> None:
+        report_path = self._last_functional_report_path
+        if not report_path or not os.path.exists(report_path):
+            QMessageBox.information(self, "No report yet", "Run a functional sweep first so there is a report to open.")
+            return
+        webbrowser.open(f"file://{os.path.abspath(report_path)}")
 
     def _populate_issues(self, issues) -> None:
         self.issue_tree.clear()
@@ -1345,6 +1438,7 @@ class AnalyzerGUI(QMainWindow):
             self.live_result_lookup[item] = result
 
         self.live_result_tree.setCurrentItem(self.live_result_tree.topLevelItem(0))
+        self._render_functional_report_tabs(functional_summary)
 
     def _populate_functional_findings(self, issues) -> None:
         self.functional_findings_tree.clear()
@@ -1398,6 +1492,23 @@ class AnalyzerGUI(QMainWindow):
 
         if lines:
             self.static_detail_body.setPlainText("\n\n".join(lines))
+
+    def _render_functional_report_tabs(self, functional_summary) -> None:
+        if not functional_summary:
+            return
+        self.functional_detail_title.setText("Functional Sweep Overview")
+        self.functional_detail_meta.setText(self._format_functional_by_endpoint(functional_summary))
+        self.functional_detail_body.setPlainText(self._format_functional_summary(functional_summary))
+
+    def _format_functional_by_endpoint(self, functional_summary) -> str:
+        data = functional_summary.to_dict() if functional_summary else {}
+        by_endpoint = data.get("by_endpoint", {})
+        if not by_endpoint:
+            return "No per-endpoint summary available."
+        return "\n".join(
+            f"{endpoint} -> {stats['passed']}/{stats['total']} passed"
+            for endpoint, stats in by_endpoint.items()
+        )
 
     def _build_functional_test_definition(self) -> dict:
         endpoint_spec = self._selected_endpoint()

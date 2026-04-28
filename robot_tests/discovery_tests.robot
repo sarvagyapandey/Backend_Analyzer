@@ -99,6 +99,9 @@ Find Java GraphQL variables and placeholders
     ${discovery}=    Discover Backend    ${project}
     Should Be Equal    ${discovery.runtime}    Java
     Should Contain    ${discovery.frameworks}    Spring GraphQL
+    ${endpoint}=    Get First Endpoint    ${discovery}    graphql
+    Endpoint Should Contain    ${endpoint}    name
+    Endpoint Should Contain    ${endpoint}    age
 
 Find Java GraphQL custom input types as non-null
     [Documentation]    Checks that Java GraphQL mutation inputs are discovered.
@@ -135,6 +138,9 @@ Build GraphQL example with camelized inner field
     Write Project File    ${project}    schema.py    import strawberry\n\n@strawberry.type\nclass User:\n    field1: str\n    field2: str\n\n@strawberry.type\nclass Query:\n    @strawberry.field\n    def user_by_id(self, user_id: str) -> User:\n        return User(field1="a", field2="b")
     ${discovery}=    Discover Backend    ${project}
     Should Be Equal    ${discovery.runtime}    Python
+    ${endpoint}=    Get First Endpoint    ${discovery}    graphql
+    Endpoint Should Contain    ${endpoint}    field1
+    Endpoint Should Contain    ${endpoint}    field2
 
 Build GraphQL example from schema file
     [Documentation]    Checks that schema files are handled during discovery.
@@ -154,13 +160,15 @@ Enrich GraphQL query from schema details
     ${discovery}=    Discover Backend    ${project}
     Should Be Equal    ${discovery.runtime}    Python
 
-Use placeholder selection when object fields are unknown
-    [Documentation]    Checks that unknown object fields still produce a GraphQL selection.
+Use neutral selection when object fields are unknown
+    [Documentation]    Checks that unknown object fields still produce a GraphQL-safe fallback.
     Log    Running unknown field selection case.
     ${project}=    Create Temp Project
     Write Project File    ${project}    schema.py    import strawberry\n\nclass Profile:\n    pass\n\n@strawberry.type\nclass Query:\n    @strawberry.field\n    def profile(self) -> Profile:\n        return Profile()
     ${discovery}=    Discover Backend    ${project}
     Should Be Equal    ${discovery.runtime}    Python
+    ${endpoint}=    Get First Endpoint    ${discovery}    graphql
+    Endpoint Should Contain    ${endpoint}    __typename
 
 Build GraphQL query without direct import
     [Documentation]    Checks that GraphQL queries can be built without a direct type import.
@@ -185,6 +193,10 @@ Build nested GraphQL query fields
     Write Project File    ${project}    schema.py    import strawberry\n\n@strawberry.type\nclass Profile:\n    name: str\n    role: str\n\n@strawberry.type\nclass User:\n    profile: Profile\n\n@strawberry.type\nclass Query:\n    @strawberry.field\n    def user(self) -> User:\n        return User(profile=Profile(name="demo", role="admin"))
     ${discovery}=    Discover Backend    ${project}
     Should Be Equal    ${discovery.runtime}    Python
+    ${endpoint}=    Get First Endpoint    ${discovery}    graphql
+    Endpoint Should Contain    ${endpoint}    profile
+    Endpoint Should Contain    ${endpoint}    name
+    Endpoint Should Contain    ${endpoint}    role
 
 Build nested GraphQL mutation fields
     [Documentation]    Checks that nested GraphQL mutation fields are discovered.
@@ -193,6 +205,9 @@ Build nested GraphQL mutation fields
     Write Project File    ${project}    schema.py    import strawberry\n\n@strawberry.type\nclass AuditInfo:\n    updated_by: str\n\n@strawberry.type\nclass UserProfile:\n    id: str\n    audit: AuditInfo\n\n@strawberry.type\nclass Mutation:\n    @strawberry.mutation\n    def update_user(self, id: str) -> UserProfile:\n        return UserProfile(id=id, audit=AuditInfo(updated_by="admin"))
     ${discovery}=    Discover Backend    ${project}
     Should Be Equal    ${discovery.runtime}    Python
+    ${endpoint}=    Get First Endpoint    ${discovery}    graphql
+    Endpoint Should Contain    ${endpoint}    audit
+    Endpoint Should Contain    ${endpoint}    updated_by
 
 Mark custom GraphQL input types as non-null
     [Documentation]    Checks that custom GraphQL input types are treated as required.

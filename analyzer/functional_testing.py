@@ -9,10 +9,12 @@ from __future__ import annotations
 import json
 import socket
 import time
+from copy import deepcopy
 import urllib.error
 import urllib.request
 import urllib.parse
 from dataclasses import dataclass, field
+from html import escape
 from typing import Any, Dict, List, Optional, Tuple
 
 from analyzer.issue import Issue, IssueLocation, IssueSeverity, IssueType
@@ -99,11 +101,30 @@ class FunctionalTestSummary:
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert summary to a JSON-friendly structure."""
+        by_endpoint: Dict[str, Dict[str, Any]] = {}
+        for result in self.results:
+            bucket = by_endpoint.setdefault(
+                result.endpoint,
+                {"total": 0, "passed": 0, "failed": 0, "results": []},
+            )
+            bucket["total"] += 1
+            bucket["passed"] += 1 if result.passed else 0
+            bucket["failed"] += 0 if result.passed else 1
+            bucket["results"].append(
+                {
+                    "name": result.name,
+                    "passed": result.passed,
+                    "status_code": result.status_code,
+                    "response_time_ms": result.response_time_ms,
+                    "message": result.message,
+                }
+            )
         return {
             "config_path": self.config_path,
             "total": self.total,
             "passed": self.passed,
             "failed": self.failed,
+            "by_endpoint": by_endpoint,
             "results": [
                 {
                     "name": result.name,
@@ -123,6 +144,91 @@ class FunctionalTestSummary:
                 for result in self.results
             ],
         }
+
+    def write_json_report(self, output_path: str) -> None:
+        """Write the summary to a JSON file."""
+        with open(output_path, "w", encoding="utf-8") as handle:
+            json.dump(self.to_dict(), handle, indent=2, ensure_ascii=True)
+
+    def write_html_report(self, output_path: str) -> None:
+        """Write a detailed HTML report for the functional test sweep."""
+        report = self.to_dict()
+        rows = []
+        for result in report["results"]:
+            outcome_class = "pass" if result["passed"] else "fail"
+            rows.append(
+                "<tr>"
+                f"<td>{escape(str(result['name']))}</td>"
+                f"<td class='{outcome_class}'>{'PASS' if result['passed'] else 'FAIL'}</td>"
+                f"<td>{escape(str(result['endpoint']))}</td>"
+                f"<td>{escape(str(result['request_method']))}</td>"
+                f"<td>{'' if result['status_code'] is None else escape(str(result['status_code']))}</td>"
+                f"<td>{'' if result['response_time_ms'] is None else escape(str(result['response_time_ms']))}</td>"
+                f"<td><pre>{escape(str(result['request_body'] or ''))}</pre></td>"
+                f"<td><pre>{escape(str(result['response_body'] or ''))}</pre></td>"
+                f"<td><pre>{escape(str(result['message'] or ''))}</pre></td>"
+                "</tr>"
+            )
+
+        endpoint_rows = []
+        for endpoint, data in report["by_endpoint"].items():
+            endpoint_rows.append(
+                "<tr>"
+                f"<td>{escape(str(endpoint))}</td>"
+                f"<td>{data['total']}</td>"
+                f"<td>{data['passed']}</td>"
+                f"<td>{data['failed']}</td>"
+                "</tr>"
+            )
+
+        html = f"""<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Functional Test Report</title>
+  <style>
+    body {{ font-family: Arial, sans-serif; margin: 24px; color: #111827; }}
+    h1, h2 {{ margin-bottom: 8px; }}
+    .summary {{ display: grid; grid-template-columns: repeat(4, minmax(120px, 1fr)); gap: 12px; margin: 18px 0 28px; }}
+    .card {{ background: #f8fafc; border: 1px solid #d1d5db; border-radius: 10px; padding: 14px; }}
+    table {{ border-collapse: collapse; width: 100%; margin-bottom: 28px; }}
+    th, td {{ border: 1px solid #d1d5db; padding: 8px; vertical-align: top; text-align: left; }}
+    th {{ background: #eff6ff; }}
+    .pass {{ color: #166534; font-weight: 700; }}
+    .fail {{ color: #b91c1c; font-weight: 700; }}
+    pre {{ white-space: pre-wrap; word-break: break-word; margin: 0; }}
+  </style>
+</head>
+<body>
+  <h1>Functional Test Report</h1>
+  <div class="summary">
+    <div class="card"><strong>Total</strong><div>{report['total']}</div></div>
+    <div class="card"><strong>Passed</strong><div class="pass">{report['passed']}</div></div>
+    <div class="card"><strong>Failed</strong><div class="fail">{report['failed']}</div></div>
+    <div class="card"><strong>Source</strong><div>{escape(str(report['config_path']))}</div></div>
+  </div>
+  <h2>By Endpoint</h2>
+  <table>
+    <thead><tr><th>Endpoint</th><th>Total</th><th>Passed</th><th>Failed</th></tr></thead>
+    <tbody>
+      {"".join(endpoint_rows)}
+    </tbody>
+  </table>
+  <h2>Runs</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Test</th><th>Status</th><th>Endpoint</th><th>Method</th><th>HTTP</th><th>Time (ms)</th><th>Request Body</th><th>Response Body</th><th>Message</th>
+      </tr>
+    </thead>
+    <tbody>
+      {"".join(rows)}
+    </tbody>
+  </table>
+</body>
+</html>"""
+        with open(output_path, "w", encoding="utf-8") as handle:
+            handle.write(html)
 
 
 class FunctionalTestRunner:
@@ -170,6 +276,187 @@ class FunctionalTestRunner:
             results.append(self._run_single_test(normalized_base_url, defaults, test))
 
         return FunctionalTestSummary(config_path=source_label, results=results)
+
+    def build_auto_tests_from_discovery(self, discovery, *, base_url: str = "") -> List[Dict[str, Any]]:
+        """Build multiple payload variants for every discovered endpoint."""
+        tests: List[Dict[str, Any]] = []
+        endpoints = getattr(discovery, "endpoints", []) or []
+        for endpoint in endpoints:
+            tests.extend(self._build_endpoint_variants(endpoint, base_url=base_url))
+        return tests
+
+    def _build_endpoint_variants(self, endpoint, *, base_url: str = "") -> List[Dict[str, Any]]:
+        url = endpoint.path if str(endpoint.path).startswith(("http://", "https://")) else f"{base_url.rstrip('/')}{endpoint.path}"
+        tests: List[Dict[str, Any]] = []
+
+        if endpoint.kind == "graphql":
+            query = endpoint.graphql_query or f"query {endpoint.name}Query {{\n  {endpoint.name}\n}}"
+            variables = endpoint.graphql_variables or {}
+            tests.append(self._graph_ql_test_case(endpoint, url, query, variables, "baseline"))
+            for index, variant in enumerate(self._graphql_variable_variants(variables), start=1):
+                tests.append(self._graph_ql_test_case(endpoint, url, query, variant, f"variant-{index}"))
+            return tests
+
+        body_variants = self._json_body_variants(endpoint.example_json_body)
+        if endpoint.method in {"POST", "PUT", "PATCH", "DELETE"}:
+            for index, body in enumerate(body_variants, start=1):
+                tests.append(
+                    {
+                        "name": f"{endpoint.label()} payload-{index}",
+                        "kind": endpoint.kind,
+                        "method": endpoint.method,
+                        "url": url,
+                        "json_body": body,
+                        "expect": {"status": 200},
+                    }
+                )
+        else:
+            tests.append(
+                {
+                    "name": endpoint.label(),
+                    "kind": endpoint.kind,
+                    "method": endpoint.method,
+                    "url": url,
+                    "expect": {"status": 200},
+                }
+            )
+        return tests
+
+    def _graph_ql_test_case(self, endpoint, url: str, query: str, variables: Dict[str, Any], suffix: str) -> Dict[str, Any]:
+        return {
+            "name": f"{endpoint.label()} {suffix}",
+            "kind": "graphql",
+            "method": "POST",
+            "url": url,
+            "query": query,
+            "variables": variables,
+            "expect": {"status": 200, "data_not_null": True, "no_errors": True},
+        }
+
+    def _graphql_variable_variants(self, variables: Dict[str, Any]) -> List[Dict[str, Any]]:
+        if not variables:
+            return [{}]
+        variants: List[Dict[str, Any]] = [dict(variables)]
+        for key, value in variables.items():
+            variants.extend(self._field_variants(dict(variables), key, value))
+        return self._dedupe_variants(variants)
+
+    def _json_body_variants(self, body: Optional[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        if not isinstance(body, dict) or not body:
+            return [{}, {"example": "value"}, {"example": "value-2"}]
+        variants: List[Dict[str, Any]] = [dict(body)]
+        for key, value in body.items():
+            variants.extend(self._field_variants(dict(body), key, value))
+        return self._dedupe_variants(variants)
+
+    def _field_variants(self, payload: Dict[str, Any], key: str, value: Any) -> List[Dict[str, Any]]:
+        variants: List[Dict[str, Any]] = []
+        for variant_index in (1, 2):
+            mutated = deepcopy(payload)
+            mutated[key] = self._variant_value(value, variant_index, depth=0)
+            variants.append(mutated)
+
+        if isinstance(value, dict):
+            variants.extend(self._nested_dict_variants(payload, key, value, depth=0))
+        if isinstance(value, list):
+            variants.extend(self._nested_list_variants(payload, key, value, depth=0))
+        return variants
+
+    def _nested_dict_variants(self, payload: Dict[str, Any], key: str, value: Dict[str, Any], depth: int) -> List[Dict[str, Any]]:
+        if depth >= 3:
+            return []
+        variants: List[Dict[str, Any]] = []
+        for nested_key, nested_value in value.items():
+            mutated = deepcopy(payload)
+            nested_copy = deepcopy(value)
+            nested_copy[nested_key] = self._variant_value(nested_value, 1, depth=depth + 1)
+            mutated[key] = nested_copy
+            variants.append(mutated)
+            if isinstance(nested_value, dict):
+                variants.extend(self._nested_dict_variants(mutated, key, nested_copy, depth + 1))
+            if isinstance(nested_value, list):
+                variants.extend(self._nested_list_variants(mutated, key, nested_copy, depth + 1))
+        return variants
+
+    def _nested_list_variants(self, payload: Dict[str, Any], key: str, value: List[Any], depth: int) -> List[Dict[str, Any]]:
+        if depth >= 3:
+            return []
+        if not value:
+            mutated = deepcopy(payload)
+            mutated[key] = [f"item-{depth + 1}"]
+            return [mutated]
+
+        variants: List[Dict[str, Any]] = []
+        for index, item in enumerate(value):
+            mutated = deepcopy(payload)
+            list_copy = deepcopy(value)
+            list_copy[index] = self._variant_value(item, 1, depth=depth + 1)
+            mutated[key] = list_copy
+            variants.append(mutated)
+            if isinstance(item, dict):
+                variants.extend(self._nested_list_of_dict_variants(mutated, key, list_copy, depth + 1))
+            if isinstance(item, list):
+                variants.extend(self._nested_list_variants(mutated, key, list_copy, depth + 1))
+        return variants
+
+    def _nested_list_of_dict_variants(self, payload: Dict[str, Any], key: str, value: List[Any], depth: int) -> List[Dict[str, Any]]:
+        variants: List[Dict[str, Any]] = []
+        for index, item in enumerate(value):
+            if not isinstance(item, dict):
+                continue
+            mutated = deepcopy(payload)
+            list_copy = deepcopy(value)
+            nested_dict = deepcopy(item)
+            for nested_key, nested_value in item.items():
+                nested_dict[nested_key] = self._variant_value(nested_value, 1, depth=depth + 1)
+            list_copy[index] = nested_dict
+            mutated[key] = list_copy
+            variants.append(mutated)
+        return variants
+
+    def _mutate_value(self, payload: Dict[str, Any], key: str, value: Any, variant_index: int) -> Dict[str, Any]:
+        payload[key] = self._variant_value(value, variant_index)
+        return payload
+
+    def _variant_value(self, value: Any, variant_index: int, depth: int = 0) -> Any:
+        if depth >= 3:
+            return value
+        if isinstance(value, bool):
+            return not value if variant_index == 1 else value
+        if isinstance(value, int):
+            return value + variant_index
+        if isinstance(value, float):
+            return value + float(variant_index)
+        if isinstance(value, str):
+            return f"{value}-{variant_index}"
+        if isinstance(value, list):
+            if not value:
+                return [f"item-{variant_index}"]
+            mutated = [self._variant_value(item, variant_index, depth + 1) for item in value]
+            mutated.append(self._variant_value(value[0], variant_index, depth + 1))
+            return mutated
+        if isinstance(value, dict):
+            mutated = dict(value)
+            if mutated:
+                first_key = next(iter(mutated))
+                mutated[first_key] = self._variant_value(mutated[first_key], variant_index, depth + 1)
+            else:
+                mutated["example"] = f"value-{variant_index}"
+            return mutated
+        if value is None:
+            return f"value-{variant_index}"
+        return value
+
+    def _dedupe_variants(self, variants: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        unique: List[Dict[str, Any]] = []
+        seen = set()
+        for variant in variants:
+            fingerprint = json.dumps(variant, sort_keys=True, default=str)
+            if fingerprint in seen:
+                continue
+            seen.add(fingerprint)
+            unique.append(variant)
+        return unique
 
     def _run_single_test(
         self,

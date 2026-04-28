@@ -122,6 +122,10 @@ class BackendAnalyzerLibrary:
         effective_base_url = base_url or self._base_url
         return self._functional_runner.run_tests(tests, base_url=effective_base_url)
 
+    def build_auto_functional_tests(self, discovery, base_url=None):
+        effective_base_url = base_url or self._base_url
+        return self._functional_runner.build_auto_tests_from_discovery(discovery, base_url=effective_base_url)
+
     def create_sample_project(self):
         self._temp_dir = tempfile.TemporaryDirectory()
         project = Path(self._temp_dir.name)
